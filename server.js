@@ -8,7 +8,7 @@ import { createWriteStream } from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const PORT = 5173;
+const PORT = process.env.PORT || 3000; // Usa variável de ambiente ou porta 3000
 
 // Compila um arquivo TypeScript com bundle (inclui React do npm)
 async function compileTS(filePath) {
@@ -55,6 +55,15 @@ const server = createServer(async (req, res) => {
             const html = readFileSync(filePath, 'utf-8');
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(html);
+        } else if (!extname(filePath) && !existsSync(filePath)) {
+            // Rotas do React Router - redireciona para index.html
+            const htmlPath = join(__dirname, '/index.html');
+            if (existsSync(htmlPath)) {
+                const html = readFileSync(htmlPath, 'utf-8');
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.end(html);
+                return;
+            }
         } else if (existsSync(filePath)) {
             // Serve outros arquivos estáticos
             const content = readFileSync(filePath);

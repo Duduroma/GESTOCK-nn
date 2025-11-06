@@ -8,7 +8,17 @@ interface ButtonProps {
 
 function Button({ children, onClick, type = 'button' }: ButtonProps): React.ReactElement {
     return (
-        <button type={type} onClick={onClick}>
+        <button 
+            type={type} 
+            onClick={onClick}
+            style={{
+                width: '100%',
+                border: 'none',
+                background: 'transparent',
+                padding: 0,
+                cursor: 'pointer'
+            }}
+        >
             {children}
         </button>
     );
