@@ -1,6 +1,4 @@
-// Declara tipos globais para React
-declare const React: any;
-declare const ReactDOM: any;
+// Os tipos já estão definidos globalmente em src/types/global.d.ts
 
 function App(): JSX.Element {
     return <h1>Olá Mundo</h1>;

@@ -1,5 +1,4 @@
-// Declara tipo global para React
-declare const React: any;
+// Os tipos já estão definidos globalmente em src/types/global.d.ts
 
 interface ButtonProps {
     children: React.ReactNode;
