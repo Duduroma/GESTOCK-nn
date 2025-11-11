@@ -23,6 +23,12 @@ function CriarPedidoModal({ isOpen, onClose, onConfirm }: CriarPedidoModalProps)
     const [dataPrevista, setDataPrevista] = useState('');
 
     const handleConfirm = () => {
+        const form = document.getElementById('form-criar-pedido') as HTMLFormElement;
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         onConfirm({ produto, fornecedor, quantidade, leadTime, dataPrevista });
         setProduto('');
         setFornecedor('');
@@ -38,6 +44,7 @@ function CriarPedidoModal({ isOpen, onClose, onConfirm }: CriarPedidoModalProps)
             onClose={onClose}
             title="Criar Pedido"
             subtitle="Preencha os dados do pedido"
+            formId="form-criar-pedido"
             footer={
                 <ModalActions
                     onCancel={onClose}

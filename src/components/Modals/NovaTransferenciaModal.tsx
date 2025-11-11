@@ -24,6 +24,12 @@ function NovaTransferenciaModal({ isOpen, onClose, onConfirm }: NovaTransferenci
     const [responsavel, setResponsavel] = useState('');
 
     const handleConfirm = () => {
+        const form = document.getElementById('form-nova-transferencia') as HTMLFormElement;
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         onConfirm({ produto, estoqueOrigem, estoqueDestino, quantidade, responsavel });
         setProduto('');
         setEstoqueOrigem('');
@@ -39,6 +45,7 @@ function NovaTransferenciaModal({ isOpen, onClose, onConfirm }: NovaTransferenci
             onClose={onClose}
             title="Nova Transferência"
             subtitle="Preencha os dados da transferência"
+            formId="form-nova-transferencia"
             footer={
                 <ModalActions
                     onCancel={onClose}

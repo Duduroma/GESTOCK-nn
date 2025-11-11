@@ -25,6 +25,12 @@ function RegistrarMovimentacaoModal({ isOpen, onClose, onConfirm }: RegistrarMov
     const [responsavel, setResponsavel] = useState('');
 
     const handleConfirm = () => {
+        const form = document.getElementById('form-registrar-movimentacao') as HTMLFormElement;
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         onConfirm({ produto, tipo, estoque, quantidade, motivo, responsavel });
         setProduto('');
         setTipo('Entrada');
@@ -41,6 +47,7 @@ function RegistrarMovimentacaoModal({ isOpen, onClose, onConfirm }: RegistrarMov
             onClose={onClose}
             title="Registrar Movimentação"
             subtitle="Preencha os dados da movimentação"
+            formId="form-registrar-movimentacao"
             footer={
                 <ModalActions
                     onCancel={onClose}

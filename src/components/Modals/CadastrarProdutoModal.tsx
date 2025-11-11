@@ -28,6 +28,12 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm }: CadastrarProdutoM
     const [status, setStatus] = useState('Ativo');
 
     const handleConfirm = () => {
+        const form = document.getElementById('form-cadastrar-produto') as HTMLFormElement;
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         onConfirm({
             codigo,
             nome,
@@ -53,6 +59,7 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm }: CadastrarProdutoM
             onClose={onClose}
             title="Cadastrar Produto"
             subtitle="Preencha os dados do produto"
+            formId="form-cadastrar-produto"
             footer={
                 <ModalActions
                     onCancel={onClose}

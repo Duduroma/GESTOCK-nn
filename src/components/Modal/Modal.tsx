@@ -5,9 +5,10 @@ interface ModalProps {
     subtitle?: string;
     children: React.ReactNode;
     footer?: React.ReactNode;
+    formId?: string;
 }
 
-function Modal({ isOpen, onClose, title, subtitle, children, footer }: ModalProps): React.ReactElement | null {
+function Modal({ isOpen, onClose, title, subtitle, children, footer, formId }: ModalProps): React.ReactElement | null {
     if (!isOpen) return null;
 
     return (
@@ -76,11 +77,13 @@ function Modal({ isOpen, onClose, title, subtitle, children, footer }: ModalProp
                     </button>
                 </div>
 
-                <div style={{
-                    padding: '24px'
-                }}>
-                    {children}
-                </div>
+                <form id={formId} onSubmit={(e) => e.preventDefault()}>
+                    <div style={{
+                        padding: '24px'
+                    }}>
+                        {children}
+                    </div>
+                </form>
 
                 {footer && (
                     <div style={{

@@ -21,7 +21,15 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm }: CadastrarEstoqueM
     const [capacidade, setCapacidade] = useState('');
     const [status, setStatus] = useState('Ativo');
 
-    const handleConfirm = () => {
+    const handleConfirm = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        
+        const form = document.getElementById('form-cadastrar-estoque') as HTMLFormElement;
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         onConfirm({ nome, endereco, capacidade, status });
         setNome('');
         setEndereco('');
@@ -36,10 +44,11 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm }: CadastrarEstoqueM
             onClose={onClose}
             title="Cadastrar Estoque"
             subtitle="Preencha os dados do estoque"
+            formId="form-cadastrar-estoque"
             footer={
                 <ModalActions
                     onCancel={onClose}
-                    onConfirm={handleConfirm}
+                    onConfirm={() => handleConfirm()}
                 />
             }
         >

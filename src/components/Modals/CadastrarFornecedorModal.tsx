@@ -20,6 +20,12 @@ function CadastrarFornecedorModal({ isOpen, onClose, onConfirm }: CadastrarForne
     const [leadTime, setLeadTime] = useState('');
 
     const handleConfirm = () => {
+        const form = document.getElementById('form-cadastrar-fornecedor') as HTMLFormElement;
+        if (form && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         onConfirm({ nome, contato, leadTime });
         setNome('');
         setContato('');
@@ -33,6 +39,7 @@ function CadastrarFornecedorModal({ isOpen, onClose, onConfirm }: CadastrarForne
             onClose={onClose}
             title="Cadastrar Fornecedor"
             subtitle="Preencha os dados do fornecedor"
+            formId="form-cadastrar-fornecedor"
             footer={
                 <ModalActions
                     onCancel={onClose}
