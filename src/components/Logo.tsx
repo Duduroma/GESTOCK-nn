@@ -1,4 +1,3 @@
-// Componente global de Logo
 interface LogoProps {
     title?: string;
     subtitle?: string;
@@ -45,7 +44,6 @@ function Logo({
                 }} />
             </div>
             
-         
             {title && (
                 <h1 style={{
                     color: '#2563eb',

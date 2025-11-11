@@ -1,4 +1,3 @@
-// Componente global de Input
 interface InputProps {
     label: string;
     type?: string;
