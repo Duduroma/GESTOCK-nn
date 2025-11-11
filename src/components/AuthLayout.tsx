@@ -1,4 +1,3 @@
-// Componente de Layout para telas de autenticação (Login/Cadastro)
 interface AuthLayoutProps {
     children: React.ReactNode;
 }
@@ -17,7 +16,6 @@ function AuthLayout({ children }: AuthLayoutProps): React.ReactElement {
         }}>
             {children}
             
-            {/* Ícone de Ajuda fixo */}
             <div style={{
                 position: 'fixed',
                 bottom: '20px',

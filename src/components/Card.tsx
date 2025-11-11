@@ -1,4 +1,3 @@
-// Componente global de Card (container branco)
 interface CardProps {
     children: React.ReactNode;
     title?: string;

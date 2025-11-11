@@ -1,5 +1,3 @@
-// React 17+ com JSX automático não precisa importar React
-
 interface ButtonProps {
     children: React.ReactNode;
     onClick?: () => void;
