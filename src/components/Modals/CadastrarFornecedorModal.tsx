@@ -1,23 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '../Modal/Modal';
 import ModalFormField from '../Modal/ModalFormField';
 import ModalActions from '../Modal/ModalActions';
 import ModalInfoBox from '../Modal/ModalInfoBox';
 
+interface FornecedorData {
+    nome: string;
+    contato: string;
+    leadTime: string;
+}
+
 interface CadastrarFornecedorModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (data: {
-        nome: string;
-        contato: string;
-        leadTime: string;
-    }) => void;
+    onConfirm: (data: FornecedorData) => void;
+    initialData?: FornecedorData | null;
 }
 
-function CadastrarFornecedorModal({ isOpen, onClose, onConfirm }: CadastrarFornecedorModalProps): React.ReactElement {
+function CadastrarFornecedorModal({ isOpen, onClose, onConfirm, initialData }: CadastrarFornecedorModalProps): React.ReactElement {
     const [nome, setNome] = useState('');
     const [contato, setContato] = useState('');
     const [leadTime, setLeadTime] = useState('');
+
+    useEffect(() => {
+        if (initialData) {
+            setNome(initialData.nome);
+            setContato(initialData.contato);
+            setLeadTime(initialData.leadTime);
+        } else {
+            setNome('');
+            setContato('');
+            setLeadTime('');
+        }
+    }, [initialData, isOpen]);
 
     const handleConfirm = () => {
         const form = document.getElementById('form-cadastrar-fornecedor') as HTMLFormElement;
@@ -27,18 +42,22 @@ function CadastrarFornecedorModal({ isOpen, onClose, onConfirm }: CadastrarForne
         }
 
         onConfirm({ nome, contato, leadTime });
-        setNome('');
-        setContato('');
-        setLeadTime('');
+        if (!initialData) {
+            setNome('');
+            setContato('');
+            setLeadTime('');
+        }
         onClose();
     };
+
+    const isEditMode = !!initialData;
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Cadastrar Fornecedor"
-            subtitle="Preencha os dados do fornecedor"
+            title={isEditMode ? "Editar Fornecedor" : "Cadastrar Fornecedor"}
+            subtitle={isEditMode ? "Atualize os dados do fornecedor" : "Preencha os dados do fornecedor"}
             formId="form-cadastrar-fornecedor"
             footer={
                 <ModalActions

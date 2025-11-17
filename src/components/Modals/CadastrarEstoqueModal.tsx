@@ -1,25 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '../Modal/Modal';
 import ModalFormField from '../Modal/ModalFormField';
 import ModalActions from '../Modal/ModalActions';
 import ModalInfoBox from '../Modal/ModalInfoBox';
 
+interface EstoqueData {
+    nome: string;
+    endereco: string;
+    capacidade: string;
+    status: string;
+}
+
 interface CadastrarEstoqueModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (data: {
-        nome: string;
-        endereco: string;
-        capacidade: string;
-        status: string;
-    }) => void;
+    onConfirm: (data: EstoqueData) => void;
+    initialData?: EstoqueData | null;
 }
 
-function CadastrarEstoqueModal({ isOpen, onClose, onConfirm }: CadastrarEstoqueModalProps): React.ReactElement {
+function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: CadastrarEstoqueModalProps): React.ReactElement {
     const [nome, setNome] = useState('');
     const [endereco, setEndereco] = useState('');
     const [capacidade, setCapacidade] = useState('');
     const [status, setStatus] = useState('Ativo');
+
+    useEffect(() => {
+        if (initialData) {
+            setNome(initialData.nome);
+            setEndereco(initialData.endereco);
+            setCapacidade(initialData.capacidade);
+            setStatus(initialData.status);
+        } else {
+            setNome('');
+            setEndereco('');
+            setCapacidade('');
+            setStatus('Ativo');
+        }
+    }, [initialData, isOpen]);
 
     const handleConfirm = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -31,19 +48,23 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm }: CadastrarEstoqueM
         }
 
         onConfirm({ nome, endereco, capacidade, status });
-        setNome('');
-        setEndereco('');
-        setCapacidade('');
-        setStatus('Ativo');
+        if (!initialData) {
+            setNome('');
+            setEndereco('');
+            setCapacidade('');
+            setStatus('Ativo');
+        }
         onClose();
     };
+
+    const isEditMode = !!initialData;
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Cadastrar Estoque"
-            subtitle="Preencha os dados do estoque"
+            title={isEditMode ? "Editar Estoque" : "Cadastrar Estoque"}
+            subtitle={isEditMode ? "Atualize os dados do estoque" : "Preencha os dados do estoque"}
             formId="form-cadastrar-estoque"
             footer={
                 <ModalActions

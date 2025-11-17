@@ -1,24 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '../Modal/Modal';
 import ModalFormField from '../Modal/ModalFormField';
 import ModalActions from '../Modal/ModalActions';
 import ModalInfoBox from '../Modal/ModalInfoBox';
 
+interface ProdutoData {
+    codigo: string;
+    nome: string;
+    descricao: string;
+    embalagem: string;
+    unidadeMedida: string;
+    estoqueVinculado: string;
+    status: string;
+}
+
 interface CadastrarProdutoModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (data: {
-        codigo: string;
-        nome: string;
-        descricao: string;
-        embalagem: string;
-        unidadeMedida: string;
-        estoqueVinculado: string;
-        status: string;
-    }) => void;
+    onConfirm: (data: ProdutoData) => void;
+    initialData?: ProdutoData | null;
 }
 
-function CadastrarProdutoModal({ isOpen, onClose, onConfirm }: CadastrarProdutoModalProps): React.ReactElement {
+function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: CadastrarProdutoModalProps): React.ReactElement {
     const [codigo, setCodigo] = useState('');
     const [nome, setNome] = useState('');
     const [descricao, setDescricao] = useState('');
@@ -26,6 +29,26 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm }: CadastrarProdutoM
     const [unidadeMedida, setUnidadeMedida] = useState('');
     const [estoqueVinculado, setEstoqueVinculado] = useState('');
     const [status, setStatus] = useState('Ativo');
+
+    useEffect(() => {
+        if (initialData) {
+            setCodigo(initialData.codigo);
+            setNome(initialData.nome);
+            setDescricao(initialData.descricao);
+            setEmbalagem(initialData.embalagem);
+            setUnidadeMedida(initialData.unidadeMedida);
+            setEstoqueVinculado(initialData.estoqueVinculado);
+            setStatus(initialData.status);
+        } else {
+            setCodigo('');
+            setNome('');
+            setDescricao('');
+            setEmbalagem('');
+            setUnidadeMedida('');
+            setEstoqueVinculado('');
+            setStatus('Ativo');
+        }
+    }, [initialData, isOpen]);
 
     const handleConfirm = () => {
         const form = document.getElementById('form-cadastrar-produto') as HTMLFormElement;
@@ -43,22 +66,26 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm }: CadastrarProdutoM
             estoqueVinculado,
             status
         });
-        setCodigo('');
-        setNome('');
-        setDescricao('');
-        setEmbalagem('');
-        setUnidadeMedida('');
-        setEstoqueVinculado('');
-        setStatus('Ativo');
+        if (!initialData) {
+            setCodigo('');
+            setNome('');
+            setDescricao('');
+            setEmbalagem('');
+            setUnidadeMedida('');
+            setEstoqueVinculado('');
+            setStatus('Ativo');
+        }
         onClose();
     };
+
+    const isEditMode = !!initialData;
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Cadastrar Produto"
-            subtitle="Preencha os dados do produto"
+            title={isEditMode ? "Editar Produto" : "Cadastrar Produto"}
+            subtitle={isEditMode ? "Atualize os dados do produto" : "Preencha os dados do produto"}
             formId="form-cadastrar-produto"
             footer={
                 <ModalActions
@@ -108,8 +135,6 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm }: CadastrarProdutoM
                 ]}
             />
 
-            
-            {/* listagem de estoques */}
             <ModalFormField
                 label="Estoque Vinculado"
                 type="select"
