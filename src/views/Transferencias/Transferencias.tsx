@@ -5,59 +5,50 @@ import { Table, TableRow, TableCell } from '../../components/Table';
 import InfoBox from '../../components/InfoBox';
 import Badge from '../../components/Badge';
 import NovaTransferenciaModal from '../../components/Modals/NovaTransferenciaModal';
-
-interface Transferencia {
-    id: string;
-    data: string;
-    produto: string;
-    quantidade: string;
-    origem: string;
-    destino: string;
-    responsavel: string;
-    status: 'completed' | 'processing';
-}
+import { Transferencia, ProdutoId, EstoqueId } from '../../types/entities';
 
 function Transferencias(): React.ReactElement {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [transferencias, setTransferencias] = useState<Transferencia[]>([
         {
-            id: '1',
-            data: '22/10/2025',
-            produto: 'Tinta Acrílica Verde',
-            quantidade: '1.800',
-            origem: 'Estoque Central',
-            destino: 'Estoque Filial Sul',
+            id: 1,
+            produtoId: '1',
+            estoqueOrigemId: '1',
+            estoqueDestinoId: '2',
+            quantidade: 1800,
+            dataHora: '2025-10-22T10:00:00',
             responsavel: 'Roberto Alves',
-            status: 'completed'
+            motivo: 'Transferência entre filiais'
         },
         {
-            id: '2',
-            data: '21/10/2025',
-            produto: 'Parafuso M10',
-            quantidade: '650',
-            origem: 'Estoque Central',
-            destino: 'Estoque Temporário',
+            id: 2,
+            produtoId: '2',
+            estoqueOrigemId: '1',
+            estoqueDestinoId: '3',
+            quantidade: 650,
+            dataHora: '2025-10-21T14:30:00',
             responsavel: 'Ana Paula',
-            status: 'completed'
+            motivo: 'Reabastecimento'
         },
         {
-            id: '3',
-            data: '20/10/2025',
-            produto: 'Cabo Elétrico 8mm',
-            quantidade: '1.200',
-            origem: 'Estoque Filial Norte',
-            destino: 'Estoque Central',
+            id: 3,
+            produtoId: '3',
+            estoqueOrigemId: '2',
+            estoqueDestinoId: '1',
+            quantidade: 1200,
+            dataHora: '2025-10-20T09:15:00',
             responsavel: 'Carlos Mendes',
-            status: 'processing'
+            motivo: 'Consolidação de estoque'
         }
     ]);
 
     const handleConfirm = (data: {
-        produto: string;
-        estoqueOrigem: string;
-        estoqueDestino: string;
-        quantidade: string;
+        produtoId: string;
+        estoqueOrigemId: string;
+        estoqueDestinoId: string;
+        quantidade: number;
         responsavel: string;
+        motivo: string;
     }) => {
         console.log('Nova transferência:', data);
     };
@@ -74,20 +65,16 @@ function Transferencias(): React.ReactElement {
                 }}
             />
 
-            <Table headers={['Data', 'Produto', 'Quantidade', 'Origem', 'Destino', 'Responsável', 'Status']}>
+            <Table headers={['Data/Hora', 'Produto', 'Quantidade', 'Origem', 'Destino', 'Responsável', 'Motivo']}>
                 {transferencias.map((transferencia) => (
                     <TableRow key={transferencia.id}>
-                        <TableCell>{transferencia.data}</TableCell>
-                        <TableCell>{transferencia.produto}</TableCell>
-                        <TableCell>{transferencia.quantidade}</TableCell>
-                        <TableCell>{transferencia.origem}</TableCell>
-                        <TableCell>{transferencia.destino}</TableCell>
+                        <TableCell>{new Date(transferencia.dataHora).toLocaleString('pt-BR')}</TableCell>
+                        <TableCell>Produto {transferencia.produtoId}</TableCell>
+                        <TableCell>{transferencia.quantidade.toLocaleString('pt-BR')}</TableCell>
+                        <TableCell>Estoque {transferencia.estoqueOrigemId}</TableCell>
+                        <TableCell>Estoque {transferencia.estoqueDestinoId}</TableCell>
                         <TableCell>{transferencia.responsavel}</TableCell>
-                        <TableCell>
-                            <Badge variant={transferencia.status === 'completed' ? 'approved' : 'pending'}>
-                                {transferencia.status === 'completed' ? 'Concluída' : 'Em Processamento'}
-                            </Badge>
-                        </TableCell>
+                        <TableCell>{transferencia.motivo}</TableCell>
                     </TableRow>
                 ))}
             </Table>

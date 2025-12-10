@@ -8,15 +8,7 @@ import IconButton from '../../components/IconButton';
 import ActionButton from '../../components/ActionButton';
 import CadastrarFornecedorModal from '../../components/Modals/CadastrarFornecedorModal';
 import useTablePage from '../../hooks/useTablePage';
-
-interface Fornecedor {
-    id: string;
-    nome: string;
-    contato: string;
-    leadTime: string;
-    produtosAssociados: number;
-    status: 'active' | 'inactive';
-}
+import { Fornecedor, FornecedorId, LeadTime } from '../../types/entities';
 
 function Fornecedores(): React.ReactElement {
     const navigate = useNavigate();
@@ -28,38 +20,50 @@ function Fornecedores(): React.ReactElement {
         {
             id: '1',
             nome: 'Fornecedor ABC',
+            cnpj: '12.345.678/0001-90',
             contato: '(11) 99999-9999',
-            leadTime: '7',
-            produtosAssociados: 15,
-            status: 'active'
+            leadTimeMedio: { dias: 7 },
+            ativo: true,
+            cotacoes: {}
         },
         {
             id: '2',
             nome: 'Fornecedor XYZ',
+            cnpj: '98.765.432/0001-10',
             contato: '(11) 88888-8888',
-            leadTime: '14',
-            produtosAssociados: 8,
-            status: 'active'
+            leadTimeMedio: { dias: 14 },
+            ativo: true,
+            cotacoes: {}
         },
         {
             id: '3',
             nome: 'Fornecedor Temporário',
+            cnpj: '11.222.333/0001-44',
             contato: '(11) 77777-7777',
-            leadTime: '5',
-            produtosAssociados: 3,
-            status: 'inactive'
+            leadTimeMedio: { dias: 5 },
+            ativo: false,
+            cotacoes: {}
         }
     ]);
 
     const handleConfirm = (data: {
         nome: string;
+        cnpj: string;
         contato: string;
-        leadTime: string;
+        leadTimeMedio: number;
+        ativo: boolean;
     }) => {
         if (fornecedorEditando) {
             setFornecedores(fornecedores.map(fornecedor => 
                 fornecedor.id === fornecedorEditando.id
-                    ? { ...fornecedor, ...data }
+                    ? { 
+                        ...fornecedor, 
+                        nome: data.nome,
+                        cnpj: data.cnpj,
+                        contato: data.contato,
+                        leadTimeMedio: { dias: data.leadTimeMedio },
+                        ativo: data.ativo
+                    }
                     : fornecedor
             ));
             setItemEditando(null);
@@ -82,16 +86,16 @@ function Fornecedores(): React.ReactElement {
                 }}
             />
 
-            <Table headers={['Nome', 'Lead Time (dias)', 'Contato', 'Produtos Associados', 'Status', 'Ações']}>
+            <Table headers={['Nome', 'CNPJ', 'Contato', 'Lead Time (dias)', 'Status', 'Ações']}>
                 {fornecedores.map((fornecedor) => (
                     <TableRow key={fornecedor.id}>
                         <TableCell>{fornecedor.nome}</TableCell>
-                        <TableCell>{fornecedor.leadTime}</TableCell>
+                        <TableCell>{fornecedor.cnpj}</TableCell>
                         <TableCell>{fornecedor.contato}</TableCell>
-                        <TableCell>{fornecedor.produtosAssociados}</TableCell>
+                        <TableCell>{fornecedor.leadTimeMedio.dias}</TableCell>
                         <TableCell>
-                            <Badge variant={fornecedor.status}>
-                                {fornecedor.status === 'active' ? 'Ativo' : 'Inativo'}
+                            <Badge variant={fornecedor.ativo ? 'approved' : 'expired'}>
+                                {fornecedor.ativo ? 'Ativo' : 'Inativo'}
                             </Badge>
                         </TableCell>
                         <TableCell>
@@ -127,8 +131,10 @@ function Fornecedores(): React.ReactElement {
                 onConfirm={handleConfirm}
                 initialData={fornecedorEditando ? {
                     nome: fornecedorEditando.nome,
+                    cnpj: fornecedorEditando.cnpj,
                     contato: fornecedorEditando.contato,
-                    leadTime: fornecedorEditando.leadTime
+                    leadTimeMedio: fornecedorEditando.leadTimeMedio.dias,
+                    ativo: fornecedorEditando.ativo
                 } : null}
             />
         </MainLayout>

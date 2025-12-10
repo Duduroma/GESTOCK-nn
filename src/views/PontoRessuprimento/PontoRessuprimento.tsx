@@ -5,63 +5,38 @@ import { Table, TableRow, TableCell } from '../../components/Table';
 import Badge from '../../components/Badge';
 import ActionButton from '../../components/ActionButton';
 import Card from '../../components/Card';
-
-interface PontoRessuprimento {
-    id: string;
-    produto: string;
-    consumoMedioDiario: string;
-    consumoMedioDiarioNumero: string;
-    leadTime: string;
-    estoqueSeguranca: string;
-    ropCalculado: string;
-    ropCalculadoFormula: string;
-    saldoAtual: string;
-    status: 'adequate' | 'below';
-    consumoUltimos90Dias: string[];
-}
+import { Estoque, ROP, ProdutoId } from '../../types/entities';
 
 function PontoRessuprimento(): React.ReactElement {
-    const [expandedRow, setExpandedRow] = useState<string | null>(null);
+    const [expandedRow, setExpandedRow] = useState<ProdutoId | null>(null);
 
-    const pontos: PontoRessuprimento[] = [
+    const estoques: Estoque[] = [
         {
             id: '1',
-            produto: 'Parafuso M6',
-            consumoMedioDiario: '150 unidades/dia',
-            consumoMedioDiarioNumero: '150',
-            leadTime: '7',
-            estoqueSeguranca: '300',
-            ropCalculado: '1350',
-            ropCalculadoFormula: '(150 x 7) + 300',
-            saldoAtual: '5000',
-            status: 'adequate',
-            consumoUltimos90Dias: ['4.500 unidades', '4.950 unidades', '4.050 unidades']
-        },
-        {
-            id: '2',
-            produto: 'Tinta Branca',
-            consumoMedioDiario: '5 unidades/dia',
-            consumoMedioDiarioNumero: '5',
-            leadTime: '10',
-            estoqueSeguranca: '20',
-            ropCalculado: '70',
-            ropCalculadoFormula: '(5 x 10) + 20',
-            saldoAtual: '150',
-            status: 'adequate',
-            consumoUltimos90Dias: ['150 unidades', '165 unidades', '135 unidades']
-        },
-        {
-            id: '3',
-            produto: 'Cabo Elétrico',
-            consumoMedioDiario: '80 unidades/dia',
-            consumoMedioDiarioNumero: '80',
-            leadTime: '7',
-            estoqueSeguranca: '200',
-            ropCalculado: '760',
-            ropCalculadoFormula: '(80 x 7) + 200',
-            saldoAtual: '0',
-            status: 'below',
-            consumoUltimos90Dias: ['2.400 unidades', '2.640 unidades', '2.160 unidades']
+            clienteId: '1',
+            nome: 'Estoque Central',
+            endereco: 'Rua A, 100',
+            capacidade: 10000,
+            ativo: true,
+            rops: {
+                '1': {
+                    consumoMedio: 150,
+                    leadTimeDias: 7,
+                    estoqueSeguranca: 300,
+                    valorROP: 1350
+                },
+                '2': {
+                    consumoMedio: 5,
+                    leadTimeDias: 10,
+                    estoqueSeguranca: 20,
+                    valorROP: 70
+                }
+            },
+            saldos: {
+                '1': { fisico: 5000, reservado: 0, disponivel: 5000 },
+                '2': { fisico: 150, reservado: 0, disponivel: 150 },
+                '3': { fisico: 0, reservado: 0, disponivel: 0 }
+            }
         }
     ];
 
@@ -98,102 +73,112 @@ function PontoRessuprimento(): React.ReactElement {
             </Card>
 
             <div style={{ marginTop: '32px' }}>
-                <Table headers={['Produto', 'Consumo Médio Diário', 'Lead Time (dias)', 'Estoque de Segurança', 'ROP Calculado', 'Saldo Atual', 'Status', 'Ações']}>
-                    {pontos.map((ponto) => (
-                        <>
-                            <TableRow key={ponto.id}>
-                                <TableCell>{ponto.produto}</TableCell>
-                                <TableCell>{ponto.consumoMedioDiario}</TableCell>
-                                <TableCell>{ponto.leadTime}</TableCell>
-                                <TableCell>{ponto.estoqueSeguranca}</TableCell>
-                                <TableCell>
-                                    <div>
-                                        <div>{ponto.ropCalculado}</div>
-                                        {expandedRow === ponto.id && (
-                                            <div style={{
-                                                fontSize: '12px',
-                                                color: '#6b7280',
-                                                marginTop: '4px'
-                                            }}>
-                                                {ponto.ropCalculadoFormula}
-                                            </div>
-                                        )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>{ponto.saldoAtual}</TableCell>
-                                <TableCell>
-                                    <Badge variant={ponto.status}>
-                                        {ponto.status === 'adequate' ? 'Adequado' : 'Abaixo do ROP'}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <ActionButton
-                                        label="Ver Histórico de Consumo"
-                                        icon="📊"
-                                        onClick={() => setExpandedRow(expandedRow === ponto.id ? null : ponto.id)}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                            {expandedRow === ponto.id && (
-                                <TableRow>
-                                    <TableCell colSpan={8} style={{
-                                        backgroundColor: '#f9fafb',
-                                        padding: '24px'
-                                    }}>
-                                        <div style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'flex-start',
-                                            gap: '32px'
-                                        }}>
+                <Table headers={['Estoque', 'Produto', 'Consumo Médio Diário', 'Lead Time (dias)', 'Estoque de Segurança', 'ROP Calculado', 'Saldo Atual', 'Status', 'Ações']}>
+                    {estoques.map((estoque) => {
+                        if (!estoque.rops) return null;
+                        return Object.entries(estoque.rops).map(([produtoId, rop]) => {
+                            const saldo = estoque.saldos?.[produtoId] || { fisico: 0, reservado: 0, disponivel: 0 };
+                            const status = saldo.fisico < rop.valorROP ? 'below' : 'adequate';
+                            const formula = `(${rop.consumoMedio} x ${rop.leadTimeDias}) + ${rop.estoqueSeguranca}`;
+                            return (
+                                <>
+                                    <TableRow key={`${estoque.id}-${produtoId}`}>
+                                        <TableCell>{estoque.nome}</TableCell>
+                                        <TableCell>Produto {produtoId}</TableCell>
+                                        <TableCell>{rop.consumoMedio.toFixed(2)} unidades/dia</TableCell>
+                                        <TableCell>{rop.leadTimeDias}</TableCell>
+                                        <TableCell>{rop.estoqueSeguranca}</TableCell>
+                                        <TableCell>
                                             <div>
-                                                <div style={{
-                                                    fontSize: '14px',
-                                                    fontWeight: '600',
-                                                    color: '#374151',
-                                                    marginBottom: '12px'
-                                                }}>
-                                                    Consumo (Últimos 90 dias)
-                                                </div>
+                                                <div>{rop.valorROP}</div>
+                                                {expandedRow === produtoId && (
+                                                    <div style={{
+                                                        fontSize: '12px',
+                                                        color: '#6b7280',
+                                                        marginTop: '4px'
+                                                    }}>
+                                                        {formula}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>{saldo.fisico.toLocaleString('pt-BR')}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={status}>
+                                                {status === 'adequate' ? 'Adequado' : 'Abaixo do ROP'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <ActionButton
+                                                label="Ver Histórico de Consumo"
+                                                icon="📊"
+                                                onClick={() => setExpandedRow(expandedRow === produtoId ? null : produtoId)}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                    {expandedRow === produtoId && (
+                                        <TableRow>
+                                            <TableCell colSpan={9} style={{
+                                                backgroundColor: '#f9fafb',
+                                                padding: '24px'
+                                            }}>
                                                 <div style={{
                                                     display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '8px'
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'flex-start',
+                                                    gap: '32px'
                                                 }}>
-                                                    {ponto.consumoUltimos90Dias.map((consumo, index) => (
-                                                        <div key={index} style={{
+                                                    <div>
+                                                        <div style={{
                                                             fontSize: '14px',
-                                                            color: '#6b7280'
+                                                            fontWeight: '600',
+                                                            color: '#374151',
+                                                            marginBottom: '12px'
                                                         }}>
-                                                            {consumo}
+                                                            Informações do ROP
                                                         </div>
-                                                    ))}
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: '8px'
+                                                        }}>
+                                                            <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                                                                Consumo Médio: {rop.consumoMedio.toFixed(2)} unidades/dia
+                                                            </div>
+                                                            <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                                                                Lead Time: {rop.leadTimeDias} dias
+                                                            </div>
+                                                            <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                                                                Estoque de Segurança: {rop.estoqueSeguranca}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{
+                                                        textAlign: 'right'
+                                                    }}>
+                                                        <div style={{
+                                                            fontSize: '14px',
+                                                            fontWeight: '600',
+                                                            color: '#374151',
+                                                            marginBottom: '4px'
+                                                        }}>
+                                                            Fórmula ROP
+                                                        </div>
+                                                        <div style={{
+                                                            fontSize: '14px',
+                                                            color: '#1f2937'
+                                                        }}>
+                                                            {formula} = {rop.valorROP}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div style={{
-                                                textAlign: 'right'
-                                            }}>
-                                                <div style={{
-                                                    fontSize: '14px',
-                                                    fontWeight: '600',
-                                                    color: '#374151',
-                                                    marginBottom: '4px'
-                                                }}>
-                                                    Consumo Médio Diário
-                                                </div>
-                                                <div style={{
-                                                    fontSize: '14px',
-                                                    color: '#1f2937'
-                                                }}>
-                                                    {ponto.consumoMedioDiarioNumero} unidades/dia
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </>
-                    ))}
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </>
+                            );
+                        });
+                    })}
                 </Table>
             </div>
         </MainLayout>

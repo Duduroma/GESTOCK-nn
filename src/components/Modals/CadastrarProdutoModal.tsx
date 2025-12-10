@@ -7,11 +7,10 @@ import ModalInfoBox from '../Modal/ModalInfoBox';
 interface ProdutoData {
     codigo: string;
     nome: string;
-    descricao: string;
-    embalagem: string;
-    unidadeMedida: string;
-    estoqueVinculado: string;
-    status: string;
+    unidadePeso: string;
+    peso: number;
+    perecivel: boolean;
+    ativo: boolean;
 }
 
 interface CadastrarProdutoModalProps {
@@ -24,29 +23,26 @@ interface CadastrarProdutoModalProps {
 function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: CadastrarProdutoModalProps): React.ReactElement {
     const [codigo, setCodigo] = useState('');
     const [nome, setNome] = useState('');
-    const [descricao, setDescricao] = useState('');
-    const [embalagem, setEmbalagem] = useState('');
-    const [unidadeMedida, setUnidadeMedida] = useState('');
-    const [estoqueVinculado, setEstoqueVinculado] = useState('');
-    const [status, setStatus] = useState('Ativo');
+    const [unidadePeso, setUnidadePeso] = useState('g');
+    const [peso, setPeso] = useState<number>(0);
+    const [perecivel, setPerecivel] = useState(false);
+    const [ativo, setAtivo] = useState(true);
 
     useEffect(() => {
         if (initialData) {
             setCodigo(initialData.codigo);
             setNome(initialData.nome);
-            setDescricao(initialData.descricao);
-            setEmbalagem(initialData.embalagem);
-            setUnidadeMedida(initialData.unidadeMedida);
-            setEstoqueVinculado(initialData.estoqueVinculado);
-            setStatus(initialData.status);
+            setUnidadePeso(initialData.unidadePeso);
+            setPeso(initialData.peso);
+            setPerecivel(initialData.perecivel);
+            setAtivo(initialData.ativo);
         } else {
             setCodigo('');
             setNome('');
-            setDescricao('');
-            setEmbalagem('');
-            setUnidadeMedida('');
-            setEstoqueVinculado('');
-            setStatus('Ativo');
+            setUnidadePeso('g');
+            setPeso(0);
+            setPerecivel(false);
+            setAtivo(true);
         }
     }, [initialData, isOpen]);
 
@@ -60,20 +56,18 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
         onConfirm({
             codigo,
             nome,
-            descricao,
-            embalagem,
-            unidadeMedida,
-            estoqueVinculado,
-            status
+            unidadePeso,
+            peso,
+            perecivel,
+            ativo
         });
         if (!initialData) {
             setCodigo('');
             setNome('');
-            setDescricao('');
-            setEmbalagem('');
-            setUnidadeMedida('');
-            setEstoqueVinculado('');
-            setStatus('Ativo');
+            setUnidadePeso('g');
+            setPeso(0);
+            setPerecivel(false);
+            setAtivo(true);
         }
         onClose();
     };
@@ -109,47 +103,45 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
                 required
             />
             <ModalFormField
-                label="Descrição"
-                type="textarea"
-                value={descricao}
-                onChange={(e) => setDescricao(e.target.value)}
-                rows={3}
-            />
-            <ModalFormField
-                label="Embalagem"
-                type="text"
-                value={embalagem}
-                onChange={(e) => setEmbalagem(e.target.value)}
-            />
-            <ModalFormField
-                label="Unidade de Medida"
+                label="Unidade de Peso"
                 type="select"
                 placeholder="Selecione"
-                value={unidadeMedida}
-                onChange={(e) => setUnidadeMedida(e.target.value)}
+                value={unidadePeso}
+                onChange={(e) => setUnidadePeso(e.target.value)}
                 options={[
-                    { value: 'unidade', label: 'Unidade' },
-                    { value: 'litro', label: 'Litros' },
-                    { value: 'metro', label: 'Metros' },
-                    { value: 'kg', label: 'Quilogramas' }
+                    { value: 'g', label: 'Gramas (g)' },
+                    { value: 'kg', label: 'Quilogramas (kg)' },
+                    { value: 'L', label: 'Litros (L)' },
+                    { value: 'mL', label: 'Mililitros (mL)' }
                 ]}
-            />
-
-            <ModalFormField
-                label="Estoque Vinculado"
-                type="select"
-                placeholder="Selecione"
-                value={estoqueVinculado}
-                onChange={(e) => setEstoqueVinculado(e.target.value)}
+                required
             />
             <ModalFormField
-                label="Status"
+                label="Peso"
+                type="number"
+                value={peso.toString()}
+                onChange={(e) => setPeso(parseFloat(e.target.value) || 0)}
+                required
+            />
+            <ModalFormField
+                label="Perecível"
                 type="select"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                value={perecivel ? 'true' : 'false'}
+                onChange={(e) => setPerecivel(e.target.value === 'true')}
                 options={[
-                    { value: 'Ativo', label: 'Ativo' },
-                    { value: 'Inativo', label: 'Inativo' }
+                    { value: 'false', label: 'Não' },
+                    { value: 'true', label: 'Sim' }
+                ]}
+                required
+            />
+            <ModalFormField
+                label="Ativo"
+                type="select"
+                value={ativo ? 'true' : 'false'}
+                onChange={(e) => setAtivo(e.target.value === 'true')}
+                options={[
+                    { value: 'true', label: 'Ativo' },
+                    { value: 'false', label: 'Inativo' }
                 ]}
                 required
             />

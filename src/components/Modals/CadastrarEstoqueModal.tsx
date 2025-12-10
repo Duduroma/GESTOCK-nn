@@ -5,10 +5,11 @@ import ModalActions from '../Modal/ModalActions';
 import ModalInfoBox from '../Modal/ModalInfoBox';
 
 interface EstoqueData {
+    clienteId: string;
     nome: string;
     endereco: string;
-    capacidade: string;
-    status: string;
+    capacidade: number;
+    ativo: boolean;
 }
 
 interface CadastrarEstoqueModalProps {
@@ -19,22 +20,25 @@ interface CadastrarEstoqueModalProps {
 }
 
 function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: CadastrarEstoqueModalProps): React.ReactElement {
+    const [clienteId, setClienteId] = useState('');
     const [nome, setNome] = useState('');
     const [endereco, setEndereco] = useState('');
-    const [capacidade, setCapacidade] = useState('');
-    const [status, setStatus] = useState('Ativo');
+    const [capacidade, setCapacidade] = useState<number>(0);
+    const [ativo, setAtivo] = useState(true);
 
     useEffect(() => {
         if (initialData) {
+            setClienteId(initialData.clienteId);
             setNome(initialData.nome);
             setEndereco(initialData.endereco);
             setCapacidade(initialData.capacidade);
-            setStatus(initialData.status);
+            setAtivo(initialData.ativo);
         } else {
+            setClienteId('');
             setNome('');
             setEndereco('');
-            setCapacidade('');
-            setStatus('Ativo');
+            setCapacidade(0);
+            setAtivo(true);
         }
     }, [initialData, isOpen]);
 
@@ -47,12 +51,13 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
             return;
         }
 
-        onConfirm({ nome, endereco, capacidade, status });
+        onConfirm({ clienteId, nome, endereco, capacidade, ativo });
         if (!initialData) {
+            setClienteId('');
             setNome('');
             setEndereco('');
-            setCapacidade('');
-            setStatus('Ativo');
+            setCapacidade(0);
+            setAtivo(true);
         }
         onClose();
     };
@@ -74,6 +79,18 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
             }
         >
             <ModalFormField
+                label="Cliente"
+                type="select"
+                placeholder="Selecione o cliente"
+                value={clienteId}
+                onChange={(e) => setClienteId(e.target.value)}
+                options={[
+                    { value: '1', label: 'Cliente 1' },
+                    { value: '2', label: 'Cliente 2' }
+                ]}
+                required
+            />
+            <ModalFormField
                 label="Nome do Estoque"
                 type="text"
                 value={nome}
@@ -89,19 +106,19 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
             />
             <ModalFormField
                 label="Capacidade Máxima"
-                type="text"
-                value={capacidade}
-                onChange={(e) => setCapacidade(e.target.value)}
+                type="number"
+                value={capacidade.toString()}
+                onChange={(e) => setCapacidade(parseInt(e.target.value) || 0)}
                 required
             />
             <ModalFormField
-                label="Status"
+                label="Ativo"
                 type="select"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                value={ativo ? 'true' : 'false'}
+                onChange={(e) => setAtivo(e.target.value === 'true')}
                 options={[
-                    { value: 'Ativo', label: 'Ativo' },
-                    { value: 'Inativo', label: 'Inativo' }
+                    { value: 'true', label: 'Ativo' },
+                    { value: 'false', label: 'Inativo' }
                 ]}
                 required
             />

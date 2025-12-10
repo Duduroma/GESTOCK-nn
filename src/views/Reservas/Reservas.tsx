@@ -7,95 +7,69 @@ import Badge from '../../components/Badge';
 import ActionButton from '../../components/ActionButton';
 import Tabs from '../../components/Tabs';
 import InfoBox from '../../components/InfoBox';
-
-interface Reserva {
-    id: string;
-    produto: string;
-    pedido: string;
-    quantidadeReservada: string;
-    dataReserva: string;
-    status: 'active' | 'released' | 'canceled';
-}
+import { ReservaRegistro, TipoReservaRegistro, ProdutoId } from '../../types/entities';
 
 function Reservas(): React.ReactElement {
     const [activeTab, setActiveTab] = useState(0);
-    const [reservas, setReservas] = useState<Reserva[]>([
+    const [reservas, setReservas] = useState<ReservaRegistro[]>([
         {
-            id: '1',
-            produto: 'Tinta Acrílica Vermelha',
-            pedido: 'Pedido #15',
-            quantidadeReservada: '8.500',
-            dataReserva: '17/10/2025',
-            status: 'active'
+            produtoId: '1',
+            quantidade: 8500,
+            dataHora: '2025-10-17T10:00:00',
+            tipo: TipoReservaRegistro.RESERVA
         },
         {
-            id: '2',
-            produto: 'Parafuso M12',
-            pedido: 'Pedido #16',
-            quantidadeReservada: '1.200',
-            dataReserva: '18/10/2025',
-            status: 'active'
+            produtoId: '2',
+            quantidade: 1200,
+            dataHora: '2025-10-18T11:00:00',
+            tipo: TipoReservaRegistro.RESERVA
         },
         {
-            id: '3',
-            produto: 'Cabo Elétrico 10mm',
-            pedido: 'Pedido #13',
-            quantidadeReservada: '3.800',
-            dataReserva: '12/10/2025',
-            status: 'released'
+            produtoId: '3',
+            quantidade: 3800,
+            dataHora: '2025-10-12T09:00:00',
+            tipo: TipoReservaRegistro.LIBERACAO
         },
         {
-            id: '4',
-            produto: 'Tinta Látex Amarela',
-            pedido: 'Pedido #14',
-            quantidadeReservada: '75',
-            dataReserva: '11/10/2025',
-            status: 'released'
+            produtoId: '4',
+            quantidade: 75,
+            dataHora: '2025-10-11T14:00:00',
+            tipo: TipoReservaRegistro.LIBERACAO
         },
         {
-            id: '5',
-            produto: 'Parafuso M6',
-            pedido: 'Pedido #12',
-            quantidadeReservada: '6.000',
-            dataReserva: '09/10/2025',
-            status: 'canceled'
+            produtoId: '1',
+            quantidade: 6000,
+            dataHora: '2025-10-09T08:00:00',
+            tipo: TipoReservaRegistro.LIBERACAO
         }
     ]);
 
-    const reservasAtivas = reservas.filter(r => r.status === 'active');
-    const reservasLiberadas = reservas.filter(r => r.status === 'released');
-    const reservasCanceladas = reservas.filter(r => r.status === 'canceled');
+    const reservasAtivas = reservas.filter(r => r.tipo === TipoReservaRegistro.RESERVA);
+    const reservasLiberadas = reservas.filter(r => r.tipo === TipoReservaRegistro.LIBERACAO);
     
-    const totalUnidadesAtivas = reservasAtivas.reduce((sum, r) => {
-        const quantidade = parseInt(r.quantidadeReservada.replace(/\./g, '').replace(',', '.')) || 0;
-        return sum + quantidade;
-    }, 0);
+    const totalUnidadesAtivas = reservasAtivas.reduce((sum, r) => sum + r.quantidade, 0);
 
     const reservasFiltradas = useMemo(() => {
         switch (activeTab) {
             case 0: 
-                return reservas.filter(r => r.status === 'active');
+                return reservas.filter(r => r.tipo === TipoReservaRegistro.RESERVA);
             case 1:  
-                return reservas.filter(r => r.status === 'released' || r.status === 'canceled');
+                return reservas.filter(r => r.tipo === TipoReservaRegistro.LIBERACAO);
             case 2: 
-                return reservas.filter(r => r.status === 'canceled');
+                return reservas.filter(r => r.tipo === TipoReservaRegistro.LIBERACAO);
             default:
                 return [];
         }
     }, [activeTab, reservas]);
 
-    const handleLiberarReserva = (reservaId: string) => {
-        setReservas(reservas.map(reserva => 
-            reserva.id === reservaId
-                ? { ...reserva, status: 'released' }
-                : reserva
-        ));
-    };
-
-    const statusConfig: Record<string, { variant: 'approved' | 'adequate' | 'expired' | 'pending'; label: string }> = {
-        active: { variant: 'approved', label: 'Ativa' },
-        released: { variant: 'adequate', label: 'Liberada' },
-        canceled: { variant: 'expired', label: 'Cancelada' }
+    const handleLiberarReserva = (produtoId: ProdutoId, quantidade: number) => {
+        const novaLiberacao: ReservaRegistro = {
+            produtoId,
+            quantidade,
+            dataHora: new Date().toISOString(),
+            tipo: TipoReservaRegistro.LIBERACAO
+        };
+        setReservas([...reservas, novaLiberacao]);
     };
 
     return (
@@ -122,41 +96,34 @@ function Reservas(): React.ReactElement {
                     value={reservasLiberadas.length}
                     variant="green"
                 />
-                <SummaryCard
-                    title="Reservas Canceladas"
-                    value={reservasCanceladas.length}
-                    variant="red"
-                />
             </div>
 
             <Tabs
                 tabs={[
                     { label: 'Ativas', count: reservasAtivas.length },
-                    { label: 'Histórico' },
-                    { label: 'Canceladas', count: reservasCanceladas.length }
+                    { label: 'Histórico', count: reservasLiberadas.length }
                 ]}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
             />
 
-            <Table headers={['Produto', 'Pedido', 'Quantidade Reservada', 'Data da Reserva', 'Status', 'Ações']}>
-                {reservasFiltradas.map((reserva) => (
-                    <TableRow key={reserva.id}>
-                        <TableCell>{reserva.produto}</TableCell>
-                        <TableCell>{reserva.pedido}</TableCell>
-                        <TableCell>{reserva.quantidadeReservada}</TableCell>
-                        <TableCell>{reserva.dataReserva}</TableCell>
+            <Table headers={['Produto', 'Quantidade', 'Data/Hora', 'Tipo', 'Ações']}>
+                {reservasFiltradas.map((reserva, index) => (
+                    <TableRow key={`${reserva.produtoId}-${reserva.dataHora}-${index}`}>
+                        <TableCell>Produto {reserva.produtoId}</TableCell>
+                        <TableCell>{reserva.quantidade.toLocaleString('pt-BR')}</TableCell>
+                        <TableCell>{new Date(reserva.dataHora).toLocaleString('pt-BR')}</TableCell>
                         <TableCell>
-                            <Badge variant={statusConfig[reserva.status]?.variant || 'pending'}>
-                                {statusConfig[reserva.status]?.label || 'Pendente'}
+                            <Badge variant={reserva.tipo === TipoReservaRegistro.RESERVA ? 'approved' : 'adequate'}>
+                                {reserva.tipo === TipoReservaRegistro.RESERVA ? 'Reserva' : 'Liberação'}
                             </Badge>
                         </TableCell>
                         <TableCell>
-                            {reserva.status === 'active' && (
+                            {reserva.tipo === TipoReservaRegistro.RESERVA && (
                                 <ActionButton
                                     label="Liberar Reserva"
                                     icon="✕"
-                                    onClick={() => handleLiberarReserva(reserva.id)}
+                                    onClick={() => handleLiberarReserva(reserva.produtoId, reserva.quantidade)}
                                 />
                             )}
                         </TableCell>

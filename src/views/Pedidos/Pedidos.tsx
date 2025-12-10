@@ -6,67 +6,71 @@ import Badge from '../../components/Badge';
 import ActionButton from '../../components/ActionButton';
 import InfoBox from '../../components/InfoBox';
 import CriarPedidoModal from '../../components/Modals/CriarPedidoModal';
-
-interface Pedido {
-    id: string;
-    produto: string;
-    fornecedor: string;
-    quantidade: string;
-    dataPrevista: string;
-    status: 'pending' | 'received' | 'canceled';
-}
+import { Pedido, PedidoId, StatusPedido, ItemPedido, ClienteId, FornecedorId, EstoqueId } from '../../types/entities';
 
 function Pedidos(): React.ReactElement {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [pedidos, setPedidos] = useState<Pedido[]>([
         {
             id: '1',
-            produto: 'Parafuso M6',
-            fornecedor: 'Fornecedor B',
-            quantidade: '10.000',
-            dataPrevista: '21/10/2025',
-            status: 'received'
+            clienteId: '1',
+            fornecedorId: '2',
+            dataCriacao: '2025-10-15',
+            dataPrevistaEntrega: '2025-10-21',
+            estoqueId: '1',
+            itens: [
+                { produtoId: '1', quantidade: 10000, precoUnitario: 0.50 }
+            ],
+            status: StatusPedido.RECEBIDO
         },
         {
             id: '2',
-            produto: 'Tinta Branca',
-            fornecedor: 'Fornecedor C',
-            quantidade: '50',
-            dataPrevista: '26/10/2025',
-            status: 'pending'
+            clienteId: '1',
+            fornecedorId: '3',
+            dataCriacao: '2025-10-20',
+            dataPrevistaEntrega: '2025-10-26',
+            estoqueId: '1',
+            itens: [
+                { produtoId: '2', quantidade: 50, precoUnitario: 85.00 }
+            ],
+            status: StatusPedido.ENVIADO
         },
         {
             id: '3',
-            produto: 'Parafuso M6',
-            fornecedor: 'Fornecedor A',
-            quantidade: '5.000',
-            dataPrevista: '23/10/2025',
-            status: 'pending'
+            clienteId: '1',
+            fornecedorId: '1',
+            dataCriacao: '2025-10-18',
+            dataPrevistaEntrega: '2025-10-23',
+            estoqueId: '2',
+            itens: [
+                { produtoId: '1', quantidade: 5000, precoUnitario: 0.45 }
+            ],
+            status: StatusPedido.CRIADO
         }
     ]);
 
     const handleConfirm = (data: {
-        produto: string;
-        fornecedor: string;
-        quantidade: string;
-        leadTime: string;
-        dataPrevista: string;
+        clienteId: string;
+        fornecedorId: string;
+        estoqueId?: string;
+        itens: ItemPedido[];
+        dataPrevistaEntrega: string;
     }) => {
         console.log('Criar pedido:', data);
     };
 
-    const handleConfirmRecebimento = (pedidoId: string) => {
+    const handleConfirmRecebimento = (pedidoId: PedidoId) => {
         setPedidos(pedidos.map(pedido => 
             pedido.id === pedidoId
-                ? { ...pedido, status: 'received' }
+                ? { ...pedido, status: StatusPedido.RECEBIDO }
                 : pedido
         ));
     };
 
-    const handleCancelar = (pedidoId: string) => {
+    const handleCancelar = (pedidoId: PedidoId) => {
         setPedidos(pedidos.map(pedido => 
             pedido.id === pedidoId
-                ? { ...pedido, status: 'canceled' }
+                ? { ...pedido, status: StatusPedido.CANCELADO }
                 : pedido
         ));
     };
@@ -83,23 +87,27 @@ function Pedidos(): React.ReactElement {
                 }}
             />
 
-            <Table headers={['ID', 'Produto', 'Fornecedor', 'Quantidade', 'Data Prevista', 'Status', 'Ações']}>
+            <Table headers={['ID', 'Itens', 'Fornecedor', 'Data Criação', 'Data Prevista', 'Status', 'Ações']}>
                 {pedidos.map((pedido) => (
                     <TableRow key={pedido.id}>
                         <TableCell>#{pedido.id}</TableCell>
-                        <TableCell>{pedido.produto}</TableCell>
-                        <TableCell>{pedido.fornecedor}</TableCell>
-                        <TableCell>{pedido.quantidade}</TableCell>
-                        <TableCell>{pedido.dataPrevista}</TableCell>
+                        <TableCell>
+                            {pedido.itens.map((item, idx) => (
+                                <div key={idx}>
+                                    Produto {item.produtoId}: {item.quantidade.toLocaleString('pt-BR')} un. (R$ {item.precoUnitario.toFixed(2)})
+                                </div>
+                            ))}
+                        </TableCell>
+                        <TableCell>Fornecedor {pedido.fornecedorId}</TableCell>
+                        <TableCell>{new Date(pedido.dataCriacao).toLocaleDateString('pt-BR')}</TableCell>
+                        <TableCell>{new Date(pedido.dataPrevistaEntrega).toLocaleDateString('pt-BR')}</TableCell>
                         <TableCell>
                             <Badge variant={
-                                pedido.status === 'received' ? 'approved' : 
-                                pedido.status === 'canceled' ? 'expired' : 
+                                pedido.status === StatusPedido.RECEBIDO ? 'approved' : 
+                                pedido.status === StatusPedido.CANCELADO ? 'expired' : 
                                 'pending'
                             }>
-                                {pedido.status === 'received' ? 'Recebido' : 
-                                 pedido.status === 'canceled' ? 'Cancelado' : 
-                                 'Pendente'}
+                                {pedido.status}
                             </Badge>
                         </TableCell>
                         <TableCell>
@@ -112,13 +120,13 @@ function Pedidos(): React.ReactElement {
                                     label="Confirmar Recebimento"
                                     icon="✓"
                                     onClick={() => handleConfirmRecebimento(pedido.id)}
-                                    disabled={pedido.status === 'received' || pedido.status === 'canceled'}
+                                    disabled={pedido.status === StatusPedido.RECEBIDO || pedido.status === StatusPedido.CANCELADO}
                                 />
                                 <ActionButton
                                     label="Cancelar"
                                     icon="✕"
                                     onClick={() => handleCancelar(pedido.id)}
-                                    disabled={pedido.status === 'received' || pedido.status === 'canceled'}
+                                    disabled={pedido.status === StatusPedido.RECEBIDO || pedido.status === StatusPedido.CANCELADO}
                                 />
                             </div>
                         </TableCell>

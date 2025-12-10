@@ -7,70 +7,61 @@ import Badge from '../../components/Badge';
 import { useState, useMemo } from 'react';
 import RegistrarMovimentacaoModal from '../../components/Modals/RegistrarMovimentacaoModal';
 
-interface Movimentacao {
-    id: string;
-    data: string;
-    produto: string;
-    tipo: 'entrada' | 'saida';
-    quantidade: string;
-    motivo: string;
-    responsavel: string;
-    estoque: string;
-}
+import { Movimentacao, TipoMovimentacao, ProdutoId } from '../../types/entities';
 
 function Movimentacoes(): React.ReactElement {
     const [activeTab, setActiveTab] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([
         {
-            id: '1',
-            data: '22/10/2025',
-            produto: 'Tinta Acrílica Azul',
-            tipo: 'entrada',
-            quantidade: '3.500',
+            id: 1,
+            tipo: TipoMovimentacao.ENTRADA,
+            produtoId: '1',
+            quantidade: 3500,
+            dataHora: '2025-10-22T10:00:00',
+            responsavel: 'Carlos Mendes',
             motivo: 'Recebimento de Pedido #12',
-            responsavel: 'Carlos Mendes',
-            estoque: 'Estoque Central'
+            meta: {}
         },
         {
-            id: '2',
-            data: '21/10/2025',
-            produto: 'Parafuso M10',
-            tipo: 'saida',
-            quantidade: '850',
-            motivo: 'Venda ao Cliente',
+            id: 2,
+            tipo: TipoMovimentacao.SAIDA,
+            produtoId: '2',
+            quantidade: 850,
+            dataHora: '2025-10-21T14:30:00',
             responsavel: 'Ana Paula',
-            estoque: 'Estoque Filial Sul'
+            motivo: 'Venda ao Cliente',
+            meta: {}
         },
         {
-            id: '3',
-            data: '20/10/2025',
-            produto: 'Cabo Elétrico 6mm',
-            tipo: 'entrada',
-            quantidade: '2.200',
-            motivo: 'Recebimento de Pedido #11',
+            id: 3,
+            tipo: TipoMovimentacao.ENTRADA,
+            produtoId: '3',
+            quantidade: 2200,
+            dataHora: '2025-10-20T09:15:00',
             responsavel: 'Roberto Alves',
-            estoque: 'Estoque Filial Norte'
+            motivo: 'Recebimento de Pedido #11',
+            meta: {}
         },
         {
-            id: '4',
-            data: '19/10/2025',
-            produto: 'Tinta Látex Branca',
-            tipo: 'saida',
-            quantidade: '35',
-            motivo: 'Transferência para Filial',
+            id: 4,
+            tipo: TipoMovimentacao.SAIDA,
+            produtoId: '4',
+            quantidade: 35,
+            dataHora: '2025-10-19T16:45:00',
             responsavel: 'Fernanda Lima',
-            estoque: 'Estoque Central'
+            motivo: 'Transferência para Filial',
+            meta: {}
         },
         {
-            id: '5',
-            data: '18/10/2025',
-            produto: 'Parafuso M6',
-            tipo: 'entrada',
-            quantidade: '8.000',
-            motivo: 'Recebimento de Pedido #10',
+            id: 5,
+            tipo: TipoMovimentacao.ENTRADA,
+            produtoId: '1',
+            quantidade: 8000,
+            dataHora: '2025-10-18T11:20:00',
             responsavel: 'Carlos Mendes',
-            estoque: 'Estoque Central'
+            motivo: 'Recebimento de Pedido #10',
+            meta: {}
         }
     ]);
 
@@ -79,24 +70,25 @@ function Movimentacoes(): React.ReactElement {
             case 0:
                 return movimentacoes;
             case 1:
-                return movimentacoes.filter(m => m.tipo === 'entrada');
+                return movimentacoes.filter(m => m.tipo === TipoMovimentacao.ENTRADA);
             case 2:
-                return movimentacoes.filter(m => m.tipo === 'saida');
+                return movimentacoes.filter(m => m.tipo === TipoMovimentacao.SAIDA);
             default:
                 return [];
         }
     }, [activeTab, movimentacoes]);
 
-    const movimentacoesEntradas = movimentacoes.filter(m => m.tipo === 'entrada');
-    const movimentacoesSaidas = movimentacoes.filter(m => m.tipo === 'saida');
+    const movimentacoesEntradas = movimentacoes.filter(m => m.tipo === TipoMovimentacao.ENTRADA);
+    const movimentacoesSaidas = movimentacoes.filter(m => m.tipo === TipoMovimentacao.SAIDA);
 
     const handleConfirm = (data: {
-        produto: string;
-        tipo: string;
-        estoque: string;
-        quantidade: string;
+        produtoId: string;
+        tipo: TipoMovimentacao;
+        quantidade: number;
+        dataHora: string;
         motivo: string;
         responsavel: string;
+        meta?: Record<string, string>;
     }) => {
         console.log('Registrar movimentação:', data);
     };
@@ -145,24 +137,23 @@ function Movimentacoes(): React.ReactElement {
                 onTabChange={setActiveTab}
             />
 
-            <Table headers={['Data', 'Produto', 'Tipo', 'Quantidade', 'Motivo', 'Responsável', 'Estoque']}>
+            <Table headers={['Data/Hora', 'Produto', 'Tipo', 'Quantidade', 'Motivo', 'Responsável']}>
                 {movimentacoesFiltradas.map((movimentacao) => (
                     <TableRow key={movimentacao.id}>
-                        <TableCell>{movimentacao.data}</TableCell>
-                        <TableCell>{movimentacao.produto}</TableCell>
+                        <TableCell>{new Date(movimentacao.dataHora).toLocaleString('pt-BR')}</TableCell>
+                        <TableCell>Produto {movimentacao.produtoId}</TableCell>
                         <TableCell>
                             <Badge 
-                                variant={movimentacao.tipo} 
-                                icon={movimentacao.tipo === 'entrada' ? '↑' : '↓'}
+                                variant={movimentacao.tipo === TipoMovimentacao.ENTRADA ? 'entrada' : 'saida'} 
+                                icon={movimentacao.tipo === TipoMovimentacao.ENTRADA ? '↑' : '↓'}
                                 shape="square"
                             >
-                                {movimentacao.tipo === 'entrada' ? 'Entrada' : 'Saída'}
+                                {movimentacao.tipo === TipoMovimentacao.ENTRADA ? 'Entrada' : 'Saída'}
                             </Badge>
                         </TableCell>
-                        <TableCell>{movimentacao.quantidade}</TableCell>
+                        <TableCell>{movimentacao.quantidade.toLocaleString('pt-BR')}</TableCell>
                         <TableCell>{movimentacao.motivo}</TableCell>
                         <TableCell>{movimentacao.responsavel}</TableCell>
-                        <TableCell>{movimentacao.estoque}</TableCell>
                     </TableRow>
                 ))}
             </Table>

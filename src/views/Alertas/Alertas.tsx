@@ -5,63 +5,44 @@ import { Table, TableRow, TableCell } from '../../components/Table';
 import SummaryCard from '../../components/SummaryCard';
 import InfoBox from '../../components/InfoBox';
 import Badge from '../../components/Badge';
-
-interface Alerta {
-    id: string;
-    severidade: 'critical' | 'medium' | 'high';
-    produto: string;
-    estoque: string;
-    quantidadeAtual: number;
-    rop: number;
-    deficit: number;
-    fornecedorSugerido: string;
-    dataAlerta: string;
-}
+import { Alerta, AlertaId, ProdutoId, EstoqueId, FornecedorId } from '../../types/entities';
 
 function Alertas(): React.ReactElement {
     const [alertas, setAlertas] = useState<Alerta[]>([
         {
             id: '1',
-            severidade: 'critical',
-            produto: 'Tinta Acrílica Branca',
-            estoque: 'Estoque Filial Sul',
-            quantidadeAtual: 0,
-            rop: 850,
-            deficit: -850,
-            fornecedorSugerido: 'Fornecedor XYZ',
-            dataAlerta: '18/10/2025'
+            produtoId: '1',
+            estoqueId: '2',
+            dataGeracao: '2025-10-18T10:00:00',
+            fornecedorSugerido: '3',
+            ativo: true
         },
         {
             id: '2',
-            severidade: 'high',
-            produto: 'Parafuso M8',
-            estoque: 'Estoque Central',
-            quantidadeAtual: 450,
-            rop: 1200,
-            deficit: -750,
-            fornecedorSugerido: 'Fornecedor ABC',
-            dataAlerta: '19/10/2025'
+            produtoId: '2',
+            estoqueId: '1',
+            dataGeracao: '2025-10-19T11:00:00',
+            fornecedorSugerido: '1',
+            ativo: true
         },
         {
             id: '3',
-            severidade: 'medium',
-            produto: 'Cabo Elétrico 4mm',
-            estoque: 'Estoque Filial Norte',
-            quantidadeAtual: 2100,
-            rop: 2500,
-            deficit: -400,
-            fornecedorSugerido: 'Fornecedor DEF',
-            dataAlerta: '20/10/2025'
+            produtoId: '3',
+            estoqueId: '2',
+            dataGeracao: '2025-10-20T09:00:00',
+            fornecedorSugerido: '2',
+            ativo: true
         }
     ]);
 
-    const handleGerarPedido = (alertaId: string) => {
+    const handleGerarPedido = (alertaId: AlertaId) => {
         console.log('pedido gerado');
     };
 
-    const alertasCriticos = alertas.filter(a => a.severidade === 'critical').length;
-    const alertasAltos = alertas.filter(a => a.severidade === 'high').length;
-    const alertasMedios = alertas.filter(a => a.severidade === 'medium').length;
+    const alertasAtivos = alertas.filter(a => a.ativo);
+    const alertasCriticos = alertasAtivos.length;
+    const alertasAltos = 0;
+    const alertasMedios = 0;
 
     return (
         <MainLayout>
@@ -93,34 +74,13 @@ function Alertas(): React.ReactElement {
                 />
             </div>
 
-            <Table headers={['Severidade', 'Produto', 'Estoque', 'Quantidade Atual', 'ROP', 'Déficit', 'Fornecedor Sugerido', 'Data do Alerta', 'Ações']}>
-                {alertas.map((alerta) => (
+            <Table headers={['Produto', 'Estoque', 'Fornecedor Sugerido', 'Data do Alerta', 'Ações']}>
+                {alertasAtivos.map((alerta) => (
                     <TableRow key={alerta.id}>
-                        <TableCell>
-                            <Badge variant={alerta.severidade === 'critical' ? 'critical' : 'medium'}>
-                                {alerta.severidade === 'critical' ? 'Crítico' : 
-                                 alerta.severidade === 'high' ? 'Alto' : 'Médio'}
-                            </Badge>
-                        </TableCell>
-                        <TableCell>{alerta.produto}</TableCell>
-                        <TableCell>{alerta.estoque}</TableCell>
-                        <TableCell>
-                            <span style={{
-                                color: alerta.quantidadeAtual === 0 ? '#dc2626' : '#1f2937'
-                            }}>
-                                {alerta.quantidadeAtual}
-                            </span>
-                        </TableCell>
-                        <TableCell>{alerta.rop}</TableCell>
-                        <TableCell>
-                            <span style={{
-                                color: '#dc2626'
-                            }}>
-                                {alerta.deficit}
-                            </span>
-                        </TableCell>
-                        <TableCell>{alerta.fornecedorSugerido}</TableCell>
-                        <TableCell>{alerta.dataAlerta}</TableCell>
+                        <TableCell>Produto {alerta.produtoId}</TableCell>
+                        <TableCell>Estoque {alerta.estoqueId}</TableCell>
+                        <TableCell>{alerta.fornecedorSugerido ? `Fornecedor ${alerta.fornecedorSugerido}` : 'N/A'}</TableCell>
+                        <TableCell>{new Date(alerta.dataGeracao).toLocaleString('pt-BR')}</TableCell>
                         <TableCell>
                             <button
                                 onClick={() => handleGerarPedido(alerta.id)}

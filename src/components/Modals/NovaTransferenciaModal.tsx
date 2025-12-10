@@ -8,20 +8,22 @@ interface NovaTransferenciaModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: (data: {
-        produto: string;
-        estoqueOrigem: string;
-        estoqueDestino: string;
-        quantidade: string;
+        produtoId: string;
+        estoqueOrigemId: string;
+        estoqueDestinoId: string;
+        quantidade: number;
         responsavel: string;
+        motivo: string;
     }) => void;
 }
 
 function NovaTransferenciaModal({ isOpen, onClose, onConfirm }: NovaTransferenciaModalProps): React.ReactElement {
-    const [produto, setProduto] = useState('');
-    const [estoqueOrigem, setEstoqueOrigem] = useState('');
-    const [estoqueDestino, setEstoqueDestino] = useState('');
-    const [quantidade, setQuantidade] = useState('');
+    const [produtoId, setProdutoId] = useState('');
+    const [estoqueOrigemId, setEstoqueOrigemId] = useState('');
+    const [estoqueDestinoId, setEstoqueDestinoId] = useState('');
+    const [quantidade, setQuantidade] = useState<number>(0);
     const [responsavel, setResponsavel] = useState('');
+    const [motivo, setMotivo] = useState('');
 
     const handleConfirm = () => {
         const form = document.getElementById('form-nova-transferencia') as HTMLFormElement;
@@ -30,12 +32,13 @@ function NovaTransferenciaModal({ isOpen, onClose, onConfirm }: NovaTransferenci
             return;
         }
 
-        onConfirm({ produto, estoqueOrigem, estoqueDestino, quantidade, responsavel });
-        setProduto('');
-        setEstoqueOrigem('');
-        setEstoqueDestino('');
-        setQuantidade('');
+        onConfirm({ produtoId, estoqueOrigemId, estoqueDestinoId, quantidade, responsavel, motivo });
+        setProdutoId('');
+        setEstoqueOrigemId('');
+        setEstoqueDestinoId('');
+        setQuantidade(0);
         setResponsavel('');
+        setMotivo('');
         onClose();
     };
 
@@ -58,33 +61,31 @@ function NovaTransferenciaModal({ isOpen, onClose, onConfirm }: NovaTransferenci
                 label="Produto"
                 type="select"
                 placeholder="Selecione o produto"
-                value={produto}
-                onChange={(e) => setProduto(e.target.value)}
+                value={produtoId}
+                onChange={(e) => setProdutoId(e.target.value)}
                 required
             />
-            {/* listagem de estoques */}
             <ModalFormField
                 label="Estoque de Origem"
                 type="select"
                 placeholder="Selecione o estoque de origem"
-                value={estoqueOrigem}
-                onChange={(e) => setEstoqueOrigem(e.target.value)}
+                value={estoqueOrigemId}
+                onChange={(e) => setEstoqueOrigemId(e.target.value)}
                 required
             />
-            {/* listagem de estoques */}
             <ModalFormField
                 label="Estoque de Destino"
                 type="select"
                 placeholder="Selecione o estoque de destino"
-                value={estoqueDestino}
-                onChange={(e) => setEstoqueDestino(e.target.value)}
+                value={estoqueDestinoId}
+                onChange={(e) => setEstoqueDestinoId(e.target.value)}
                 required
             />
             <ModalFormField
                 label="Quantidade"
-                type="text"
-                value={quantidade}
-                onChange={(e) => setQuantidade(e.target.value)}
+                type="number"
+                value={quantidade.toString()}
+                onChange={(e) => setQuantidade(parseInt(e.target.value) || 0)}
                 required
             />
             <ModalFormField
@@ -92,6 +93,14 @@ function NovaTransferenciaModal({ isOpen, onClose, onConfirm }: NovaTransferenci
                 type="text"
                 value={responsavel}
                 onChange={(e) => setResponsavel(e.target.value)}
+                required
+            />
+            <ModalFormField
+                label="Motivo"
+                type="textarea"
+                value={motivo}
+                onChange={(e) => setMotivo(e.target.value)}
+                rows={3}
                 required
             />
             <ModalInfoBox

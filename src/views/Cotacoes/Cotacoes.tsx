@@ -5,92 +5,45 @@ import { Table, TableRow, TableCell } from '../../components/Table';
 import Badge from '../../components/Badge';
 import ApproveButton from './ApproveButton';
 import InfoBox from '../../components/InfoBox';
-
-interface Cotacao {
-    id: string;
-    produto: string;
-    fornecedor: string;
-    preco: string;
-    leadTime: string;
-    validade: string;
-    status: 'pending' | 'approved' | 'expired';
-    isMostAdvantageous?: boolean;
-}
+import { Cotacao, CotacaoId, ProdutoId } from '../../types/entities';
 
 function Cotacoes(): React.ReactElement {
     const [cotacoes, setCotacoes] = useState<Cotacao[]>([
         {
             id: '1',
-            produto: 'Parafuso M6',
-            fornecedor: 'Fornecedor A',
-            preco: 'R$ 0.50',
-            leadTime: '7 dias',
-            validade: '16/11/2025',
-            status: 'pending',
-            isMostAdvantageous: false
+            produtoId: '1',
+            preco: 0.50,
+            prazoDias: 7,
+            validadeAtiva: true
         },
         {
             id: '2',
-            produto: 'Parafuso M6',
-            fornecedor: 'Fornecedor B',
-            preco: 'R$ 0.45',
-            leadTime: '5 dias',
-            validade: '16/11/2025',
-            status: 'pending',
-            isMostAdvantageous: true
+            produtoId: '1',
+            preco: 0.45,
+            prazoDias: 5,
+            validadeAtiva: true
         },
         {
             id: '3',
-            produto: 'Tinta Branca',
-            fornecedor: 'Fornecedor C',
-            preco: 'R$ 85.00',
-            leadTime: '10 dias',
-            validade: '16/12/2025',
-            status: 'pending',
-            isMostAdvantageous: true
+            produtoId: '2',
+            preco: 85.00,
+            prazoDias: 10,
+            validadeAtiva: true
         },
         {
             id: '4',
-            produto: 'Cabo Elétrico',
-            fornecedor: 'Fornecedor A',
-            preco: 'R$ 12.50',
-            leadTime: '7 dias',
-            validade: '30/09/2025',
-            status: 'expired',
-            isMostAdvantageous: false
+            produtoId: '3',
+            preco: 12.50,
+            prazoDias: 7,
+            validadeAtiva: false
         }
     ]);
 
-    const handleApprove = (cotacaoId: string) => {
-        setCotacoes(cotacoes.map(cotacao => 
-            cotacao.id === cotacaoId && cotacao.status === 'pending'
-                ? { ...cotacao, status: 'approved' }
-                : cotacao
-        ));
-    };
-
-    const getStatusVariant = (status: string) => {
-        switch (status) {
-            case 'approved':
-                return 'approved';
-            case 'expired':
-                return 'expired';
-            case 'pending':
-            default:
-                return 'pending';
-        }
-    };
-
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case 'approved':
-                return 'Aprovado';
-            case 'expired':
-                return 'Expirada';
-            case 'pending':
-            default:
-                return 'Pendente';
-        }
+    const isMostAdvantageous = (cotacao: Cotacao) => {
+        const cotacoesDoProduto = cotacoes.filter(c => c.produtoId === cotacao.produtoId && c.validadeAtiva);
+        if (cotacoesDoProduto.length === 0) return false;
+        const melhorPreco = Math.min(...cotacoesDoProduto.map(c => c.preco));
+        return cotacao.preco === melhorPreco && cotacao.validadeAtiva;
     };
 
     return (
@@ -110,37 +63,38 @@ function Cotacoes(): React.ReactElement {
                 variant="blue"
             />
 
-            <Table headers={['Produto', 'Fornecedor', 'Preço', 'Lead Time', 'Validade', 'Status', 'Ações']}>
-                {cotacoes.map((cotacao) => (
-                    <TableRow key={cotacao.id} highlighted={cotacao.isMostAdvantageous}>
-                        <TableCell>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                {cotacao.produto}
-                                {cotacao.isMostAdvantageous && (
-                                    <Badge variant="adequate">
-                                        Mais Vantajosa
-                                    </Badge>
-                                )}
-                            </div>
-                        </TableCell>
-                        <TableCell>{cotacao.fornecedor}</TableCell>
-                        <TableCell>{cotacao.preco}</TableCell>
-                        <TableCell>{cotacao.leadTime}</TableCell>
-                        <TableCell>{cotacao.validade}</TableCell>
-                        <TableCell>
-                            <Badge variant={getStatusVariant(cotacao.status)}>
-                                {getStatusLabel(cotacao.status)}
-                            </Badge>
-                        </TableCell>
-                        <TableCell>
-                            <ApproveButton
-                                onClick={() => handleApprove(cotacao.id)}
-                                disabled={cotacao.status === 'expired'}
-                                isMostAdvantageous={cotacao.isMostAdvantageous && cotacao.status === 'pending'}
-                            />
-                        </TableCell>
-                    </TableRow>
-                ))}
+            <Table headers={['Produto', 'Preço', 'Prazo (dias)', 'Validade', 'Ações']}>
+                {cotacoes.map((cotacao) => {
+                    const isAdvantageous = isMostAdvantageous(cotacao);
+                    return (
+                        <TableRow key={cotacao.id} highlighted={isAdvantageous}>
+                            <TableCell>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    Produto {cotacao.produtoId}
+                                    {isAdvantageous && (
+                                        <Badge variant="adequate">
+                                            Mais Vantajosa
+                                        </Badge>
+                                    )}
+                                </div>
+                            </TableCell>
+                            <TableCell>R$ {cotacao.preco.toFixed(2)}</TableCell>
+                            <TableCell>{cotacao.prazoDias}</TableCell>
+                            <TableCell>
+                                <Badge variant={cotacao.validadeAtiva ? 'approved' : 'expired'}>
+                                    {cotacao.validadeAtiva ? 'Ativa' : 'Expirada'}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                <ApproveButton
+                                    onClick={() => console.log('Usar cotação:', cotacao.id)}
+                                    disabled={!cotacao.validadeAtiva}
+                                    isMostAdvantageous={isAdvantageous}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    );
+                })}
             </Table>
         </MainLayout>
     );

@@ -8,14 +8,7 @@ import IconButton from '../../components/IconButton';
 import ActionButton from '../../components/ActionButton';
 import CadastrarEstoqueModal from '../../components/Modals/CadastrarEstoqueModal';
 import useTablePage from '../../hooks/useTablePage';
-
-interface Estoque {
-    id: string;
-    nome: string;
-    endereco: string;
-    capacidade: string;
-    status: 'active' | 'inactive';
-}
+import { Estoque, EstoqueId, ClienteId } from '../../types/entities';
 
 function Estoques(): React.ReactElement {
     const navigate = useNavigate();
@@ -26,37 +19,48 @@ function Estoques(): React.ReactElement {
     const [estoques, setEstoques] = useState<Estoque[]>([
         {
             id: '1',
+            clienteId: '1',
             nome: 'Estoque Central',
             endereco: 'Rua A, 100 - São Paulo',
-            capacidade: '10.000',
-            status: 'active'
+            capacidade: 10000,
+            ativo: true
         },
         {
             id: '2',
+            clienteId: '1',
             nome: 'Estoque Filial Norte',
             endereco: 'Av. B, 200 - Guarulhos',
-            capacidade: '5.000',
-            status: 'active'
+            capacidade: 5000,
+            ativo: true
         },
         {
             id: '3',
+            clienteId: '2',
             nome: 'Estoque Temporário',
             endereco: 'Rua C, 300 - Osasco',
-            capacidade: '2.000',
-            status: 'inactive'
+            capacidade: 2000,
+            ativo: false
         }
     ]);
 
     const handleConfirm = (data: {
+        clienteId: string;
         nome: string;
         endereco: string;
-        capacidade: string;
-        status: string;
+        capacidade: number;
+        ativo: boolean;
     }) => {
         if (estoqueEditando) {
             setEstoques(estoques.map(estoque => 
                 estoque.id === estoqueEditando.id
-                    ? { ...estoque, ...data, status: data.status === 'Ativo' ? 'active' : 'inactive' }
+                    ? { 
+                        ...estoque, 
+                        clienteId: data.clienteId,
+                        nome: data.nome,
+                        endereco: data.endereco,
+                        capacidade: data.capacidade,
+                        ativo: data.ativo
+                    }
                     : estoque
             ));
             setItemEditando(null);
@@ -84,10 +88,10 @@ function Estoques(): React.ReactElement {
                     <TableRow key={estoque.id}>
                         <TableCell>{estoque.nome}</TableCell>
                         <TableCell>{estoque.endereco}</TableCell>
-                        <TableCell>{estoque.capacidade}</TableCell>
+                        <TableCell>{estoque.capacidade.toLocaleString('pt-BR')}</TableCell>
                         <TableCell>
-                            <Badge variant={estoque.status}>
-                                {estoque.status === 'active' ? 'Ativo' : 'Inativo'}
+                            <Badge variant={estoque.ativo ? 'approved' : 'expired'}>
+                                {estoque.ativo ? 'Ativo' : 'Inativo'}
                             </Badge>
                         </TableCell>
                         <TableCell>
@@ -122,10 +126,11 @@ function Estoques(): React.ReactElement {
                 onClose={closeModal}
                 onConfirm={handleConfirm}
                 initialData={estoqueEditando ? {
+                    clienteId: estoqueEditando.clienteId,
                     nome: estoqueEditando.nome,
                     endereco: estoqueEditando.endereco,
                     capacidade: estoqueEditando.capacidade,
-                    status: estoqueEditando.status === 'active' ? 'Ativo' : 'Inativo'
+                    ativo: estoqueEditando.ativo
                 } : null}
             />
         </MainLayout>

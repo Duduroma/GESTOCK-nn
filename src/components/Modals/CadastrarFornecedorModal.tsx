@@ -6,8 +6,10 @@ import ModalInfoBox from '../Modal/ModalInfoBox';
 
 interface FornecedorData {
     nome: string;
+    cnpj: string;
     contato: string;
-    leadTime: string;
+    leadTimeMedio: number;
+    ativo: boolean;
 }
 
 interface CadastrarFornecedorModalProps {
@@ -19,18 +21,24 @@ interface CadastrarFornecedorModalProps {
 
 function CadastrarFornecedorModal({ isOpen, onClose, onConfirm, initialData }: CadastrarFornecedorModalProps): React.ReactElement {
     const [nome, setNome] = useState('');
+    const [cnpj, setCnpj] = useState('');
     const [contato, setContato] = useState('');
-    const [leadTime, setLeadTime] = useState('');
+    const [leadTimeMedio, setLeadTimeMedio] = useState<number>(7);
+    const [ativo, setAtivo] = useState(true);
 
     useEffect(() => {
         if (initialData) {
             setNome(initialData.nome);
+            setCnpj(initialData.cnpj);
             setContato(initialData.contato);
-            setLeadTime(initialData.leadTime);
+            setLeadTimeMedio(initialData.leadTimeMedio);
+            setAtivo(initialData.ativo);
         } else {
             setNome('');
+            setCnpj('');
             setContato('');
-            setLeadTime('');
+            setLeadTimeMedio(7);
+            setAtivo(true);
         }
     }, [initialData, isOpen]);
 
@@ -41,11 +49,13 @@ function CadastrarFornecedorModal({ isOpen, onClose, onConfirm, initialData }: C
             return;
         }
 
-        onConfirm({ nome, contato, leadTime });
+        onConfirm({ nome, cnpj, contato, leadTimeMedio, ativo });
         if (!initialData) {
             setNome('');
+            setCnpj('');
             setContato('');
-            setLeadTime('');
+            setLeadTimeMedio(7);
+            setAtivo(true);
         }
         onClose();
     };
@@ -74,6 +84,14 @@ function CadastrarFornecedorModal({ isOpen, onClose, onConfirm, initialData }: C
                 required
             />
             <ModalFormField
+                label="CNPJ"
+                type="text"
+                value={cnpj}
+                onChange={(e) => setCnpj(e.target.value)}
+                placeholder="00.000.000/0000-00"
+                required
+            />
+            <ModalFormField
                 label="Contato"
                 type="tel"
                 value={contato}
@@ -81,10 +99,21 @@ function CadastrarFornecedorModal({ isOpen, onClose, onConfirm, initialData }: C
                 required
             />
             <ModalFormField
-                label="Lead Time (dias)"
+                label="Lead Time Médio (dias)"
                 type="number"
-                value={leadTime}
-                onChange={(e) => setLeadTime(e.target.value)}
+                value={leadTimeMedio.toString()}
+                onChange={(e) => setLeadTimeMedio(parseInt(e.target.value) || 7)}
+                required
+            />
+            <ModalFormField
+                label="Ativo"
+                type="select"
+                value={ativo ? 'true' : 'false'}
+                onChange={(e) => setAtivo(e.target.value === 'true')}
+                options={[
+                    { value: 'true', label: 'Ativo' },
+                    { value: 'false', label: 'Inativo' }
+                ]}
                 required
             />
             <ModalInfoBox
