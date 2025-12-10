@@ -23,6 +23,35 @@ function CriarPedidoModal({ isOpen, onClose, onConfirm }: CriarPedidoModalProps)
     const [itens, setItens] = useState<ItemPedido[]>([{ produtoId: '', quantidade: 0, precoUnitario: 0 }]);
     const [dataPrevistaEntrega, setDataPrevistaEntrega] = useState('');
 
+    const fornecedores: Array<{ id: string; leadTimeMedio: number }> = [
+        { id: '1', leadTimeMedio: 7 },
+        { id: '2', leadTimeMedio: 14 },
+        { id: '3', leadTimeMedio: 5 }
+    ];
+
+    const cotacoes: Array<{ produtoId: string; fornecedorId: string; validadeAtiva: boolean }> = [
+        { produtoId: '1', fornecedorId: '1', validadeAtiva: true },
+        { produtoId: '1', fornecedorId: '2', validadeAtiva: true },
+        { produtoId: '2', fornecedorId: '3', validadeAtiva: true },
+        { produtoId: '3', fornecedorId: '1', validadeAtiva: false }
+    ];
+
+    const calcularDataPrevista = (leadTimeDias: number) => {
+        const hoje = new Date();
+        const dataPrevista = new Date(hoje);
+        dataPrevista.setDate(hoje.getDate() + leadTimeDias);
+        return dataPrevista.toISOString().split('T')[0];
+    };
+
+    const validarCotacao = (produtoId: string, fornecedorId: string): boolean => {
+        const cotacao = cotacoes.find(c => 
+            c.produtoId === produtoId && 
+            c.fornecedorId === fornecedorId && 
+            c.validadeAtiva
+        );
+        return !!cotacao;
+    };
+
     const handleConfirm = () => {
         const form = document.getElementById('form-criar-pedido') as HTMLFormElement;
         if (form && !form.checkValidity()) {
@@ -36,12 +65,27 @@ function CriarPedidoModal({ isOpen, onClose, onConfirm }: CriarPedidoModalProps)
             return;
         }
 
+        if (!fornecedorId) {
+            alert('Selecione um fornecedor');
+            return;
+        }
+
+        for (const item of itensValidos) {
+            if (!validarCotacao(item.produtoId, fornecedorId)) {
+                alert(`Não existe cotação válida para o Produto ${item.produtoId} com o fornecedor selecionado`);
+                return;
+            }
+        }
+
+        const fornecedor = fornecedores.find(f => f.id === fornecedorId);
+        const dataCalculada = fornecedor ? calcularDataPrevista(fornecedor.leadTimeMedio) : dataPrevistaEntrega;
+
         onConfirm({ 
             clienteId, 
             fornecedorId, 
             estoqueId: estoqueId || undefined, 
             itens: itensValidos, 
-            dataPrevistaEntrega 
+            dataPrevistaEntrega: dataPrevistaEntrega || dataCalculada
         });
         setClienteId('');
         setFornecedorId('');
@@ -63,6 +107,15 @@ function CriarPedidoModal({ isOpen, onClose, onConfirm }: CriarPedidoModalProps)
         const novosItens = [...itens];
         novosItens[index] = { ...novosItens[index], [campo]: valor };
         setItens(novosItens);
+    };
+
+    const handleFornecedorChange = (fornecedorId: string) => {
+        setFornecedorId(fornecedorId);
+        const fornecedor = fornecedores.find(f => f.id === fornecedorId);
+        if (fornecedor && !dataPrevistaEntrega) {
+            const dataCalculada = calcularDataPrevista(fornecedor.leadTimeMedio);
+            setDataPrevistaEntrega(dataCalculada);
+        }
     };
 
     return (
@@ -96,7 +149,7 @@ function CriarPedidoModal({ isOpen, onClose, onConfirm }: CriarPedidoModalProps)
                 type="select"
                 placeholder="Selecione o fornecedor"
                 value={fornecedorId}
-                onChange={(e) => setFornecedorId(e.target.value)}
+                onChange={(e) => handleFornecedorChange(e.target.value)}
                 options={[
                     { value: '1', label: 'Fornecedor 1' },
                     { value: '2', label: 'Fornecedor 2' },
@@ -196,6 +249,16 @@ function CriarPedidoModal({ isOpen, onClose, onConfirm }: CriarPedidoModalProps)
                 onChange={(e) => setDataPrevistaEntrega(e.target.value)}
                 required
             />
+            {fornecedorId && (
+                <div style={{
+                    fontSize: '12px',
+                    color: '#6b7280',
+                    marginTop: '-8px',
+                    marginBottom: '8px'
+                }}>
+                    Data calculada automaticamente baseada no Lead Time do fornecedor. Você pode editar se necessário.
+                </div>
+            )}
         </Modal>
     );
 }

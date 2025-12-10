@@ -39,11 +39,25 @@ function Cotacoes(): React.ReactElement {
         }
     ]);
 
+    const [cotacoesAprovadas, setCotacoesAprovadas] = useState<Set<CotacaoId>>(new Set());
+
     const isMostAdvantageous = (cotacao: Cotacao) => {
         const cotacoesDoProduto = cotacoes.filter(c => c.produtoId === cotacao.produtoId && c.validadeAtiva);
         if (cotacoesDoProduto.length === 0) return false;
         const melhorPreco = Math.min(...cotacoesDoProduto.map(c => c.preco));
+        const cotacoesComMelhorPreco = cotacoesDoProduto.filter(c => c.preco === melhorPreco);
+        if (cotacoesComMelhorPreco.length > 1) {
+            const menorPrazo = Math.min(...cotacoesComMelhorPreco.map(c => c.prazoDias));
+            return cotacao.preco === melhorPreco && cotacao.prazoDias === menorPrazo && cotacao.validadeAtiva;
+        }
         return cotacao.preco === melhorPreco && cotacao.validadeAtiva;
+    };
+
+    const handleAprovarCotacao = (cotacaoId: CotacaoId) => {
+        const novasAprovadas = new Set(cotacoesAprovadas);
+        novasAprovadas.add(cotacaoId);
+        setCotacoesAprovadas(novasAprovadas);
+        console.log('Cotação aprovada:', cotacaoId);
     };
 
     return (
@@ -86,11 +100,15 @@ function Cotacoes(): React.ReactElement {
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                <ApproveButton
-                                    onClick={() => console.log('Usar cotação:', cotacao.id)}
-                                    disabled={!cotacao.validadeAtiva}
-                                    isMostAdvantageous={isAdvantageous}
-                                />
+                                {cotacoesAprovadas.has(cotacao.id) ? (
+                                    <Badge variant="approved">Aprovada</Badge>
+                                ) : (
+                                    <ApproveButton
+                                        onClick={() => handleAprovarCotacao(cotacao.id)}
+                                        disabled={!cotacao.validadeAtiva}
+                                        isMostAdvantageous={isAdvantageous}
+                                    />
+                                )}
                             </TableCell>
                         </TableRow>
                     );

@@ -126,7 +126,11 @@ function Pedidos(): React.ReactElement {
                                     label="Cancelar"
                                     icon="✕"
                                     onClick={() => handleCancelar(pedido.id)}
-                                    disabled={pedido.status === StatusPedido.RECEBIDO || pedido.status === StatusPedido.CANCELADO}
+                                    disabled={
+                                        pedido.status === StatusPedido.RECEBIDO || 
+                                        pedido.status === StatusPedido.CANCELADO ||
+                                        pedido.status === StatusPedido.EM_TRANSPORTE
+                                    }
                                 />
                             </div>
                         </TableCell>

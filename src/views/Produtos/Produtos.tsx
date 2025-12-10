@@ -53,6 +53,7 @@ function Produtos(): React.ReactElement {
         peso: number;
         perecivel: boolean;
         ativo: boolean;
+        estoquesVinculados: string[];
     }) => {
         if (produtoEditando) {
             setProdutos(produtos.map(produto => 
@@ -145,7 +146,8 @@ function Produtos(): React.ReactElement {
                     unidadePeso: produtoEditando.unidadePeso,
                     peso: produtoEditando.peso,
                     perecivel: produtoEditando.perecivel,
-                    ativo: produtoEditando.ativo
+                    ativo: produtoEditando.ativo,
+                    estoquesVinculados: []
                 } : null}
             />
         </MainLayout>

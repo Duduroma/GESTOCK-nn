@@ -11,6 +11,7 @@ interface ProdutoData {
     peso: number;
     perecivel: boolean;
     ativo: boolean;
+    estoquesVinculados: string[];
 }
 
 interface CadastrarProdutoModalProps {
@@ -27,6 +28,7 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
     const [peso, setPeso] = useState<number>(0);
     const [perecivel, setPerecivel] = useState(false);
     const [ativo, setAtivo] = useState(true);
+    const [estoquesVinculados, setEstoquesVinculados] = useState<string[]>([]);
 
     useEffect(() => {
         if (initialData) {
@@ -36,6 +38,7 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
             setPeso(initialData.peso);
             setPerecivel(initialData.perecivel);
             setAtivo(initialData.ativo);
+            setEstoquesVinculados(initialData.estoquesVinculados || []);
         } else {
             setCodigo('');
             setNome('');
@@ -43,6 +46,7 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
             setPeso(0);
             setPerecivel(false);
             setAtivo(true);
+            setEstoquesVinculados([]);
         }
     }, [initialData, isOpen]);
 
@@ -53,13 +57,19 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
             return;
         }
 
+        if (estoquesVinculados.length === 0) {
+            alert('Produto deve estar vinculado a pelo menos um estoque ativo');
+            return;
+        }
+
         onConfirm({
             codigo,
             nome,
             unidadePeso,
             peso,
             perecivel,
-            ativo
+            ativo,
+            estoquesVinculados
         });
         if (!initialData) {
             setCodigo('');
@@ -68,8 +78,17 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
             setPeso(0);
             setPerecivel(false);
             setAtivo(true);
+            setEstoquesVinculados([]);
         }
         onClose();
+    };
+
+    const toggleEstoque = (estoqueId: string) => {
+        if (estoquesVinculados.includes(estoqueId)) {
+            setEstoquesVinculados(estoquesVinculados.filter(id => id !== estoqueId));
+        } else {
+            setEstoquesVinculados([...estoquesVinculados, estoqueId]);
+        }
     };
 
     const isEditMode = !!initialData;
@@ -134,6 +153,29 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
                 ]}
                 required
             />
+            <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>
+                    Estoques Vinculados <span style={{ color: '#dc2626' }}>*</span>
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {['1', '2', '3'].map((estoqueId) => (
+                        <label key={estoqueId} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                checked={estoquesVinculados.includes(estoqueId)}
+                                onChange={() => toggleEstoque(estoqueId)}
+                                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            />
+                            <span style={{ fontSize: '14px', color: '#1f2937' }}>Estoque {estoqueId}</span>
+                        </label>
+                    ))}
+                </div>
+                {estoquesVinculados.length === 0 && (
+                    <span style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', display: 'block' }}>
+                        Selecione pelo menos um estoque ativo
+                    </span>
+                )}
+            </div>
             <ModalFormField
                 label="Ativo"
                 type="select"
@@ -146,7 +188,7 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
                 required
             />
             <ModalInfoBox
-                message="Produto não pode ser inativado se houver saldo positivo ou pedidos pendentes."
+                message="Produto não pode ser inativado se houver saldo positivo ou pedidos pendentes. Produto deve estar vinculado a pelo menos um estoque ativo."
                 variant="yellow"
             />
         </Modal>
