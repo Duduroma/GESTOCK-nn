@@ -115,38 +115,25 @@ function Estoques(): React.ReactElement {
     });
 
     const [busca, setBusca] = useState('');
-    const [filtroCliente, setFiltroCliente] = useState<string>('');
     const [filtroStatus, setFiltroStatus] = useState<string>('');
 
-    const clientes = [
-        { id: '1', nome: 'Cliente 1' },
-        { id: '2', nome: 'Cliente 2' },
-        { id: '3', nome: 'Cliente 3' },
-        { id: '4', nome: 'Cliente 4' }
-    ];
-
     const estoquesFiltrados = useMemo(() => {
-        console.log('🔍 Aplicando filtros:', { busca, filtroCliente, filtroStatus });
+        console.log('🔍 Aplicando filtros:', { busca, filtroStatus });
         const filtrados = estoques
             .filter(estoque => estoque != null && estoque.id != null)
             .filter(estoque => {
                 const matchBusca = !busca || 
                     (estoque.nome && estoque.nome.toLowerCase().includes(busca.toLowerCase())) ||
                     (estoque.endereco && estoque.endereco.toLowerCase().includes(busca.toLowerCase()));
-                const matchCliente = !filtroCliente || estoque.clienteId === filtroCliente;
                 const matchStatus = !filtroStatus || 
                     (filtroStatus === 'ativo' && estoque.ativo) ||
                     (filtroStatus === 'inativo' && !estoque.ativo);
                 
-                const resultado = matchBusca && matchCliente && matchStatus;
-                if (filtroCliente && resultado) {
-                    console.log(`✅ Estoque ${estoque.id} passou no filtro de cliente ${filtroCliente}`);
-                }
-                return resultado;
+                return matchBusca && matchStatus;
             });
         console.log(`📊 Total de estoques filtrados: ${filtrados.length} de ${estoques.length}`);
         return filtrados;
-    }, [estoques, busca, filtroCliente, filtroStatus]);
+    }, [estoques, busca, filtroStatus]);
 
     const handleConfirm = async (data: {
         clienteId: string;
@@ -235,33 +222,6 @@ function Estoques(): React.ReactElement {
                             boxSizing: 'border-box'
                         }}
                     />
-                </div>
-                <div style={{ minWidth: '200px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                        Cliente
-                    </label>
-                    <select
-                        value={filtroCliente}
-                        onChange={(e) => {
-                            const clienteId = String(e.target.value);
-                            console.log('🔽 Filtro de cliente alterado para:', clienteId);
-                            setFiltroCliente(clienteId);
-                        }}
-                        style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '6px',
-                            fontSize: '14px'
-                        }}
-                    >
-                        <option value="">Todos</option>
-                        {clientes.map(cliente => (
-                            <option key={cliente.id} value={cliente.id}>
-                                {cliente.nome}
-                            </option>
-                        ))}
-                    </select>
                 </div>
                 <div style={{ minWidth: '150px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
