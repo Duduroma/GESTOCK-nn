@@ -8,8 +8,50 @@ import IconButton from '../../components/IconButton';
 import ActionButton from '../../components/ActionButton';
 import CadastrarFornecedorModal from '../../components/Modals/CadastrarFornecedorModal';
 import useTablePage from '../../hooks/useTablePage';
-import { Fornecedor, LeadTime } from '../../types/entities';
-import { fornecedoresService } from '../../services/fornecedores';
+import { Fornecedor } from '../../types/entities';
+
+const fornecedoresMockados: Fornecedor[] = [
+    {
+        id: '1',
+        nome: 'Distribuidora ABC Ltda',
+        cnpj: '12.345.678/0001-90',
+        contato: 'contato@abc.com.br',
+        leadTimeMedio: { dias: 7 },
+        ativo: true
+    },
+    {
+        id: '2',
+        nome: 'Fornecedor XYZ S.A.',
+        cnpj: '98.765.432/0001-10',
+        contato: 'vendas@xyz.com.br',
+        leadTimeMedio: { dias: 14 },
+        ativo: true
+    },
+    {
+        id: '3',
+        nome: 'Comercial Delta',
+        cnpj: '11.222.333/0001-44',
+        contato: 'comercial@delta.com.br',
+        leadTimeMedio: { dias: 5 },
+        ativo: false
+    },
+    {
+        id: '4',
+        nome: 'Importadora Global',
+        cnpj: '55.666.777/0001-88',
+        contato: 'import@global.com.br',
+        leadTimeMedio: { dias: 21 },
+        ativo: true
+    },
+    {
+        id: '5',
+        nome: 'Atacadista Premium',
+        cnpj: '33.444.555/0001-66',
+        contato: 'atacado@premium.com.br',
+        leadTimeMedio: { dias: 10 },
+        ativo: true
+    }
+];
 
 function Fornecedores(): React.ReactElement {
     const navigate = useNavigate();
@@ -19,44 +61,13 @@ function Fornecedores(): React.ReactElement {
 
     useEffect(() => {
         const carregarFornecedores = async () => {
-            try {
-                console.log('🔄 [Fornecedores] ========== INICIANDO CARREGAMENTO ==========');
-                setLoading(true);
-                setError(null);
-                console.log('📡 [Fornecedores] Chamando fornecedoresService.listar()');
-                const response = await fornecedoresService.listar();
-                console.log('✅ [Fornecedores] Resposta bruta recebida:', response);
-                console.log('📊 [Fornecedores] Tipo da resposta:', Array.isArray(response) ? 'Array' : typeof response);
-                console.log('📊 [Fornecedores] É array?', Array.isArray(response));
-                
-                const fornecedoresData = Array.isArray(response) ? response : (response.content || []);
-                console.log('📦 [Fornecedores] Fornecedores processados:', fornecedoresData.length, 'itens');
-                
-                if (fornecedoresData.length > 0) {
-                    console.log('📋 [Fornecedores] Primeiro fornecedor:', fornecedoresData[0]);
-                    console.log('📋 [Fornecedores] Estrutura do primeiro fornecedor:', {
-                        id: fornecedoresData[0].id,
-                        nome: fornecedoresData[0].nome,
-                        leadTimeMedio: fornecedoresData[0].leadTimeMedio,
-                        tipoLeadTime: typeof fornecedoresData[0].leadTimeMedio
-                    });
-                }
-                
-                setFornecedores(fornecedoresData);
-                console.log('✅ [Fornecedores] Estado atualizado com', fornecedoresData.length, 'fornecedores');
-            } catch (err: any) {
-                console.error('❌ [Fornecedores] Erro ao carregar fornecedores:', err);
-                console.error('❌ [Fornecedores] Detalhes do erro:', {
-                    message: err?.message,
-                    status: err?.response?.status,
-                    data: err?.response?.data,
-                    stack: err?.stack
-                });
-                setError('Erro ao carregar fornecedores. Verifique se o backend está rodando.');
-            } finally {
-                setLoading(false);
-                console.log('🏁 [Fornecedores] ========== CARREGAMENTO FINALIZADO ==========');
-            }
+            setLoading(true);
+            setError(null);
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            setFornecedores([...fornecedoresMockados]);
+            setLoading(false);
         };
 
         carregarFornecedores();
@@ -67,45 +78,13 @@ function Fornecedores(): React.ReactElement {
     });
 
     const handleDeletar = async (fornecedorId: string) => {
-        try {
-            console.log('🗑️ [Fornecedores] ========== INATIVANDO FORNECEDOR ==========');
-            console.log('🗑️ [Fornecedores] ID do fornecedor:', fornecedorId);
-            await fornecedoresService.inativar(fornecedorId);
-            console.log('✅ [Fornecedores] Fornecedor inativado com sucesso');
-            await recarregarFornecedores();
-        } catch (err: any) {
-            console.error('❌ [Fornecedores] Erro ao inativar fornecedor:', err);
-            console.error('❌ [Fornecedores] Detalhes:', {
-                message: err?.message,
-                status: err?.response?.status,
-                data: err?.response?.data
-            });
-            alert('Erro ao deletar fornecedor. Tente novamente.');
-        }
+        setFornecedores(prev => 
+            prev.map(f => 
+                f.id === fornecedorId ? { ...f, ativo: false } : f
+            )
+        );
     };
 
-    const recarregarFornecedores = async () => {
-        try {
-            console.log('🔄 [Fornecedores] ========== RECARREGANDO LISTA ==========');
-            setLoading(true);
-            const response = await fornecedoresService.listar();
-            console.log('✅ [Fornecedores] Resposta do recarregamento:', response);
-            const fornecedoresData = Array.isArray(response) ? response : (response.content || []);
-            console.log('📦 [Fornecedores] Fornecedores recarregados:', fornecedoresData.length, 'itens');
-            setFornecedores(fornecedoresData);
-            console.log('✅ [Fornecedores] Estado atualizado com', fornecedoresData.length, 'fornecedores');
-        } catch (err: any) {
-            console.error('❌ [Fornecedores] Erro ao recarregar fornecedores:', err);
-            console.error('❌ [Fornecedores] Detalhes:', {
-                message: err?.message,
-                status: err?.response?.status,
-                data: err?.response?.data
-            });
-        } finally {
-            setLoading(false);
-            console.log('🏁 [Fornecedores] Recarregamento finalizado');
-        }
-    };
 
     const handleConfirm = async (data: {
         nome: string;
@@ -114,62 +93,32 @@ function Fornecedores(): React.ReactElement {
         leadTimeMedio: number;
         ativo: boolean;
     }) => {
-        try {
-            if (fornecedorEditando) {
-                console.log('✏️ [Fornecedores] ========== EDITANDO FORNECEDOR ==========');
-                console.log('✏️ [Fornecedores] ID do fornecedor:', fornecedorEditando.id);
-                console.log('📝 [Fornecedores] Dados recebidos do modal:', data);
-                console.log('📝 [Fornecedores] Dados para atualizar:', { 
-                    nome: data.nome, 
-                    contato: data.contato,
-                    leadTimeMedio: data.leadTimeMedio
-                });
-                
-                const updateData = {
-                    nome: data.nome,
-                    contato: data.contato,
-                    leadTimeMedio: { dias: data.leadTimeMedio } as LeadTime
-                };
-                console.log('📤 [Fornecedores] Enviando para API:', JSON.stringify(updateData, null, 2));
-                
-                const response = await fornecedoresService.atualizar(fornecedorEditando.id, updateData);
-                console.log('✅ [Fornecedores] Resposta da atualização:', response);
-                console.log('✅ [Fornecedores] Fornecedor atualizado com sucesso');
-                
-                await recarregarFornecedores();
-                setItemEditando(null);
-            } else {
-                console.log('➕ [Fornecedores] ========== CRIANDO FORNECEDOR ==========');
-                console.log('📝 [Fornecedores] Dados recebidos do modal:', data);
-                
-                const createData = {
-                    nome: data.nome,
-                    cnpj: data.cnpj,
-                    contato: data.contato,
-                    leadTimeMedio: { dias: data.leadTimeMedio } as LeadTime,
-                    ativo: data.ativo
-                };
-                console.log('📤 [Fornecedores] Dados formatados para envio:', JSON.stringify(createData, null, 2));
-                console.log('📤 [Fornecedores] Estrutura leadTimeMedio:', createData.leadTimeMedio);
-                
-                const response = await fornecedoresService.criar(createData);
-                console.log('✅ [Fornecedores] Resposta da criação:', response);
-                console.log('✅ [Fornecedores] Fornecedor criado com sucesso');
-                
-                await recarregarFornecedores();
-            }
-        } catch (err: any) {
-            console.error('❌ [Fornecedores] ========== ERRO AO SALVAR ==========');
-            console.error('❌ [Fornecedores] Erro completo:', err);
-            console.error('❌ [Fornecedores] Detalhes do erro:', {
-                message: err?.message,
-                status: err?.response?.status,
-                statusText: err?.response?.statusText,
-                data: err?.response?.data,
-                url: err?.config?.url,
-                method: err?.config?.method
-            });
-            alert('Erro ao salvar fornecedor. Tente novamente.');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        if (fornecedorEditando) {
+            setFornecedores(prev =>
+                prev.map(f =>
+                    f.id === fornecedorEditando.id
+                        ? {
+                              ...f,
+                              nome: data.nome,
+                              contato: data.contato,
+                              leadTimeMedio: { dias: data.leadTimeMedio }
+                          }
+                        : f
+                )
+            );
+            setItemEditando(null);
+        } else {
+            const novoFornecedor: Fornecedor = {
+                id: String(Date.now()),
+                nome: data.nome,
+                cnpj: data.cnpj,
+                contato: data.contato,
+                leadTimeMedio: { dias: data.leadTimeMedio },
+                ativo: data.ativo
+            };
+            setFornecedores(prev => [...prev, novoFornecedor]);
         }
     };
 
