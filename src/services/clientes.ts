@@ -12,6 +12,7 @@ interface CreateClienteData {
     nome: string;
     documento: string;
     email: string;
+    senha: string;
 }
 
 interface UpdateClienteData {

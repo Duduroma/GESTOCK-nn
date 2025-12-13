@@ -1,4 +1,5 @@
 export { default as api } from './api';
+export { default as authService } from './auth';
 export * from './estoques';
 export * from './fornecedores';
 export * from './produtos';

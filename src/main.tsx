@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './views/Login/Login';
 import Cadastro from './views/Cadastro/Cadastro';
 import Estoques from './views/Estoques/Estoques';
@@ -12,24 +12,38 @@ import Alertas from './views/Alertas/Alertas';
 import Movimentacoes from './views/Movimentacoes/Movimentacoes';
 import Transferencias from './views/Transferencias/Transferencias';
 import Reservas from './views/Reservas/Reservas';
+import ProtectedRoute from './components/ProtectedRoute';
+import authService from './services/auth';
 
 function App(): React.ReactElement {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/login" element={<Login />} />
+                {/* Rotas públicas */}
+                <Route 
+                    path="/login" 
+                    element={
+                        authService.isAuthenticated() ? (
+                            <Navigate to="/estoques" replace />
+                        ) : (
+                            <Login />
+                        )
+                    } 
+                />
                 <Route path="/cadastro" element={<Cadastro />} />
-                <Route path="/estoques" element={<Estoques />} />
-                <Route path="/produtos" element={<Produtos />} />
-                <Route path="/fornecedores" element={<Fornecedores />} />
-                <Route path="/cotacoes" element={<Cotacoes />} />
-                <Route path="/pedidos" element={<Pedidos />} />
-                <Route path="/ponto-ressuprimento" element={<PontoRessuprimento />} />
-                <Route path="/alertas" element={<Alertas />} />
-                <Route path="/movimentacoes" element={<Movimentacoes />} />
-                <Route path="/transferencias" element={<Transferencias />} />
-                <Route path="/reservas" element={<Reservas />} />
+                
+                {/* Rotas protegidas */}
+                <Route path="/" element={<Navigate to="/estoques" replace />} />
+                <Route path="/estoques" element={<ProtectedRoute><Estoques /></ProtectedRoute>} />
+                <Route path="/produtos" element={<ProtectedRoute><Produtos /></ProtectedRoute>} />
+                <Route path="/fornecedores" element={<ProtectedRoute><Fornecedores /></ProtectedRoute>} />
+                <Route path="/cotacoes" element={<ProtectedRoute><Cotacoes /></ProtectedRoute>} />
+                <Route path="/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
+                <Route path="/ponto-ressuprimento" element={<ProtectedRoute><PontoRessuprimento /></ProtectedRoute>} />
+                <Route path="/alertas" element={<ProtectedRoute><Alertas /></ProtectedRoute>} />
+                <Route path="/movimentacoes" element={<ProtectedRoute><Movimentacoes /></ProtectedRoute>} />
+                <Route path="/transferencias" element={<ProtectedRoute><Transferencias /></ProtectedRoute>} />
+                <Route path="/reservas" element={<ProtectedRoute><Reservas /></ProtectedRoute>} />
             </Routes>
         </BrowserRouter>
     );

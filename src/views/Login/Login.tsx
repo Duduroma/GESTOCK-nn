@@ -4,16 +4,28 @@ import AuthLayout from '../../components/AuthLayout';
 import Logo from '../../components/Logo';
 import Card from '../../components/Card';
 import Input from '../../components/Input';
+import authService from '../../services/auth';
 
 function Login(): React.ReactElement {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [erro, setErro] = useState('');
+    const [carregando, setCarregando] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Login:', { email, senha });
-        navigate('/estoques');
+        setErro('');
+        setCarregando(true);
+
+        try {
+            await authService.login(email, senha);
+            navigate('/estoques');
+        } catch (error: any) {
+            setErro(error.message || 'Erro ao fazer login. Verifique suas credenciais.');
+        } finally {
+            setCarregando(false);
+        }
     };
 
     return (
@@ -48,22 +60,38 @@ function Login(): React.ReactElement {
                         required
                     />
 
+                    {erro && (
+                        <div style={{
+                            padding: '12px',
+                            backgroundColor: '#fee2e2',
+                            color: '#dc2626',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            marginTop: '8px',
+                            marginBottom: '8px'
+                        }}>
+                            {erro}
+                        </div>
+                    )}
+
                     <button
                         type="submit"
+                        disabled={carregando}
                         style={{
                             width: '100%',
                             padding: '12px',
-                            backgroundColor: '#2563eb',
+                            backgroundColor: carregando ? '#9ca3af' : '#2563eb',
                             color: 'white',
                             borderRadius: '8px',
                             border: 'none',
                             fontSize: '16px',
                             fontWeight: '500',
-                            cursor: 'pointer',
-                            marginTop: '8px'
+                            cursor: carregando ? 'not-allowed' : 'pointer',
+                            marginTop: '8px',
+                            opacity: carregando ? 0.6 : 1
                         }}
                     >
-                        Entrar
+                        {carregando ? 'Entrando...' : 'Entrar'}
                     </button>
                     
                 </form>

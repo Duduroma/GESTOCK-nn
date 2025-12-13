@@ -27,9 +27,7 @@ function Estoques(): React.ReactElement {
                 const response = await estoquesService.listar();
                 console.log('✅ Resposta recebida da API:', response);
                 console.log('📦 Tipo da resposta:', Array.isArray(response) ? 'Array' : 'Objeto');
-                // Trata resposta paginada ou array direto
                 const estoquesData = Array.isArray(response) ? response : (response.content || []);
-                // Filtra valores null/undefined
                 const estoquesValidos = estoquesData.filter(estoque => estoque != null && estoque.id != null);
                 console.log('📋 Estoques processados:', estoquesValidos);
                 console.log('🔢 Quantidade de estoques válidos:', estoquesValidos.length);
@@ -81,7 +79,6 @@ function Estoques(): React.ReactElement {
             estoquesData.forEach((estoque, index) => {
                 console.log(`  Estoque ${index}: id=${estoque?.id}, ativo=${estoque?.ativo}, nome=${estoque?.nome}`);
             });
-            // Filtra valores null/undefined
             const estoquesValidos = estoquesData.filter(estoque => estoque != null && estoque.id != null);
             console.log('✅ Lista recarregada:', estoquesValidos.length, 'estoques válidos');
             console.log('📊 Resumo de status:', {

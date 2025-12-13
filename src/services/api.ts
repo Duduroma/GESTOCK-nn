@@ -62,6 +62,15 @@ async function request(endpoint: string, options: RequestOptions = {}): Promise<
         
         if (!response.ok) {
             console.error('❌ [API] Erro na resposta:', data);
+            
+            if (response.status === 401) {
+                localStorage.removeItem('authToken');
+                const currentPath = window.location.pathname;
+                if (currentPath !== '/login' && currentPath !== '/cadastro') {
+                    window.location.href = '/login';
+                }
+            }
+            
             throw new Error(data.message || 'Erro na requisição');
         }
         
