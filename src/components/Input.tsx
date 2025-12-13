@@ -13,7 +13,7 @@ function Input({
     placeholder, 
     value, 
     onChange,
-    required = false 
+    required = false
 }: InputProps): React.ReactElement {
     return (
         <div style={{ marginBottom: '20px' }}>
@@ -32,6 +32,7 @@ function Input({
                 value={value}
                 onChange={onChange}
                 required={required}
+                autoComplete="off"
                 style={{
                     width: '100%',
                     padding: '12px',

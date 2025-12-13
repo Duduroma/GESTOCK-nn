@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import useBadgeCounts from '../hooks/useBadgeCounts';
+import authService from '../services/auth';
 
 interface MenuItem {
     label: string;
@@ -147,13 +148,13 @@ function Sidebar({ onLogout }: SidebarProps): React.ReactElement {
                         color: '#1f2937',
                         marginBottom: '4px'
                     }}>
-                        Admin User
+                        {authService.getUserName() || 'Usuário'}
                     </div>
                     <div style={{
                         fontSize: '12px',
                         color: '#6b7280'
                     }}>
-                        admin@gestock.com
+                        {authService.getUserEmail() || 'email@exemplo.com'}
                     </div>
                 </div>
                 <button

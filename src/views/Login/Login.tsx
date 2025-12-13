@@ -19,7 +19,9 @@ function Login(): React.ReactElement {
         setCarregando(true);
 
         try {
-            await authService.login(email, senha);
+            const response = await authService.login(email, senha);
+            console.log('✅ [Login] Login bem-sucedido, redirecionando...');
+            console.log('🔑 [Login] Token no localStorage:', localStorage.getItem('authToken'));
             navigate('/estoques');
         } catch (error: any) {
             setErro(error.message || 'Erro ao fazer login. Verifique suas credenciais.');
