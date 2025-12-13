@@ -2,6 +2,8 @@ import api from './api';
 import { Produto, ProdutoId, EstoqueId, Cotacao } from '../types/entities';
 
 interface ListProdutosParams extends Record<string, string | number | boolean | undefined> {
+    busca?: string;
+    status?: string;
     codigo?: string;
     nome?: string;
     ativo?: boolean;
@@ -17,16 +19,15 @@ interface CreateProdutoData {
     peso: number;
     perecivel: boolean;
     ativo: boolean;
-    estoquesVinculados: EstoqueId[];
 }
 
 interface UpdateProdutoData {
+    codigo?: string;
     nome?: string;
     unidadePeso?: string;
     peso?: number;
     perecivel?: boolean;
     ativo?: boolean;
-    estoquesVinculados?: EstoqueId[];
 }
 
 interface ListCotacoesParams extends Record<string, string | number | boolean | undefined> {
@@ -43,7 +44,7 @@ interface PaginatedResponse<T> {
 }
 
 export const produtosService = {
-    listar: async (params?: ListProdutosParams): Promise<PaginatedResponse<Produto>> => {
+    listar: async (params?: ListProdutosParams): Promise<Produto[] | PaginatedResponse<Produto>> => {
         return api.get('/produtos', params);
     },
 
@@ -59,8 +60,12 @@ export const produtosService = {
         return api.put(`/produtos/${id}`, data);
     },
 
+    deletar: async (id: ProdutoId): Promise<void> => {
+        return api.delete(`/produtos/${id}`);
+    },
+    
     inativar: async (id: ProdutoId): Promise<void> => {
-        return api.patch(`/produtos/${id}/inativar`);
+        return api.delete(`/produtos/${id}`);
     },
 
     ativar: async (id: ProdutoId): Promise<void> => {

@@ -118,60 +118,64 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
                 />
             }
         >
-            <ModalFormField
-                label="Cliente"
-                type="select"
-                placeholder={carregandoClientes ? "Carregando clientes..." : "Selecione o cliente"}
-                value={clienteId}
-                onChange={(e) => setClienteId(e.target.value)}
-                options={clientes.map(cliente => ({
-                    value: cliente.id?.toString() || '',
-                    label: cliente.nome || ''
-                }))}
-                required
-                disabled={carregandoClientes}
-            />
-            <ModalFormField
-                label="Nome do Estoque"
-                type="text"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                required
-            />
-            <ModalFormField
-                label="Endereço"
-                type="text"
-                value={endereco}
-                onChange={(e) => setEndereco(e.target.value)}
-                required
-            />
-            <ModalFormField
-                label="Capacidade Máxima"
-                type="number"
-                value={capacidade.toString()}
-                onChange={(e) => setCapacidade(parseInt(e.target.value) || 0)}
-                required
-            />
-            <ModalFormField
-                label="Ativo"
-                type="select"
-                value={ativo ? 'true' : 'false'}
-                onChange={(e) => setAtivo(e.target.value === 'true')}
-                options={[
-                    { value: 'true', label: 'Ativo' },
-                    { value: 'false', label: 'Inativo' }
-                ]}
-                required
-            />
-            <ModalInfoBox
-                title="Regras de negócio:"
-                items={[
-                    'Cada estoque pertence a um único cliente',
-                    'Não pode haver dois estoques com mesmo nome',
-                    'Estoques com produtos ou pedidos não podem ser removidos'
-                ]}
-                variant="blue"
-            />
+            <>
+                {!isEditMode && (
+                    <ModalFormField
+                        label="Cliente"
+                        type="select"
+                        placeholder={carregandoClientes ? "Carregando clientes..." : "Selecione o cliente"}
+                        value={clienteId}
+                        onChange={(e) => setClienteId(e.target.value)}
+                        options={clientes.map(cliente => ({
+                            value: cliente.id?.toString() || '',
+                            label: cliente.nome || ''
+                        }))}
+                        required
+                        disabled={carregandoClientes}
+                    />
+                )}
+                <ModalFormField
+                    label="Nome do Estoque"
+                    type="text"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    required
+                />
+                <ModalFormField
+                    label="Endereço"
+                    type="text"
+                    value={endereco}
+                    onChange={(e) => setEndereco(e.target.value)}
+                    required
+                />
+                <ModalFormField
+                    label="Capacidade Máxima"
+                    type="number"
+                    value={capacidade.toString()}
+                    onChange={(e) => setCapacidade(parseInt(e.target.value) || 0)}
+                    required
+                />
+                <ModalFormField
+                    label="Ativo"
+                    type="select"
+                    value={ativo ? 'true' : 'false'}
+                    onChange={(e) => setAtivo(e.target.value === 'true')}
+                    options={[
+                        { value: 'true', label: 'Ativo' },
+                        { value: 'false', label: 'Inativo' }
+                    ]}
+                    required
+                />
+                <ModalInfoBox
+                    title="Regras de negócio:"
+                    items={[
+                        'Cada estoque pertence a um único cliente',
+                        'Não pode haver dois estoques com mesmo nome',
+                        'Estoques com produtos ou pedidos não podem ser removidos'
+                    ]}
+                    variant="blue"
+                />
+            </>
         </Modal>
     );
 }

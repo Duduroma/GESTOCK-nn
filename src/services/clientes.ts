@@ -29,7 +29,7 @@ interface PaginatedResponse<T> {
 }
 
 export const clientesService = {
-    listar: async (params?: ListClientesParams): Promise<PaginatedResponse<Cliente>> => {
+    listar: async (params?: ListClientesParams): Promise<Cliente[] | PaginatedResponse<Cliente>> => {
         console.log('📋 [ClientesService] Listando clientes com params:', params);
         try {
             const response = await api.get('/clientes', params);
@@ -38,9 +38,11 @@ export const clientesService = {
             console.log('📦 [ClientesService] É array?', Array.isArray(response));
             if (response && typeof response === 'object') {
                 console.log('📦 [ClientesService] Keys da resposta:', Object.keys(response));
-                if ('content' in response) {
+                if (Array.isArray(response)) {
+                    console.log('📦 [ClientesService] Total de clientes (array):', response.length);
+                } else if ('content' in response) {
                     console.log('📦 [ClientesService] Content:', response.content);
-                    console.log('📦 [ClientesService] Total de clientes:', response.content?.length || 0);
+                    console.log('📦 [ClientesService] Total de clientes (paginado):', response.content?.length || 0);
                 }
             }
             return response;

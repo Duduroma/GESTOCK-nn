@@ -20,21 +20,15 @@ function Produtos(): React.ReactElement {
     useEffect(() => {
         const carregarProdutos = async () => {
             try {
-                console.log('🔄 [Produtos] Iniciando carregamento de produtos...');
                 setLoading(true);
                 setError(null);
-                console.log('📡 [Produtos] Chamando GET /api/produtos');
                 const response = await produtosService.listar();
-                console.log('✅ [Produtos] Resposta recebida:', response);
                 const produtosData = Array.isArray(response) ? response : (response.content || []);
-                console.log('📦 [Produtos] Produtos processados:', produtosData.length, 'itens');
                 setProdutos(produtosData);
             } catch (err) {
-                console.error('❌ [Produtos] Erro ao carregar produtos:', err);
                 setError('Erro ao carregar produtos. Verifique se o backend está rodando.');
             } finally {
                 setLoading(false);
-                console.log('🏁 [Produtos] Carregamento finalizado');
             }
         };
 
@@ -47,16 +41,11 @@ function Produtos(): React.ReactElement {
 
     const recarregarProdutos = async () => {
         try {
-            console.log('🔄 [Produtos] Recarregando lista de produtos...');
             setLoading(true);
-            console.log('📡 [Produtos] Chamando GET /api/produtos');
             const response = await produtosService.listar();
-            console.log('✅ [Produtos] Resposta recebida:', response);
             const produtosData = Array.isArray(response) ? response : (response.content || []);
-            console.log('📦 [Produtos] Produtos recarregados:', produtosData.length, 'itens');
             setProdutos(produtosData);
         } catch (err) {
-            console.error('❌ [Produtos] Erro ao recarregar produtos:', err);
         } finally {
             setLoading(false);
         }
@@ -73,49 +62,44 @@ function Produtos(): React.ReactElement {
     }) => {
         try {
             if (produtoEditando) {
-                console.log('✏️ [Produtos] Editando produto:', produtoEditando.id);
-                console.log('📡 [Produtos] Chamando PUT /api/produtos/' + produtoEditando.id);
-                console.log('📝 [Produtos] Dados para atualizar:', { nome: data.nome, unidadePeso: data.unidadePeso, peso: data.peso });
                 await produtosService.atualizar(produtoEditando.id, {
+                    codigo: data.codigo,
                     nome: data.nome,
                     unidadePeso: data.unidadePeso,
-                    peso: data.peso
+                    peso: data.peso,
+                    perecivel: data.perecivel,
+                    ativo: data.ativo
                 });
-                console.log('✅ [Produtos] Produto atualizado com sucesso');
                 await recarregarProdutos();
                 setItemEditando(null);
             } else {
-                console.log('➕ [Produtos] Criando novo produto...');
-                console.log('📡 [Produtos] Chamando POST /api/produtos');
-                console.log('📝 [Produtos] Dados para criar:', data);
                 await produtosService.criar({
                     codigo: data.codigo,
                     nome: data.nome,
                     unidadePeso: data.unidadePeso,
                     peso: data.peso,
                     perecivel: data.perecivel,
-                    ativo: data.ativo,
-                    estoquesVinculados: data.estoquesVinculados
+                    ativo: data.ativo
                 });
-                console.log('✅ [Produtos] Produto criado com sucesso');
                 await recarregarProdutos();
             }
-        } catch (err) {
-            console.error('❌ [Produtos] Erro ao salvar produto:', err);
-            alert('Erro ao salvar produto. Tente novamente.');
+        } catch (err: any) {
+            const errorMessage = err?.response?.data?.message || err?.message || 'Erro ao salvar produto. Tente novamente.';
+            alert(errorMessage);
         }
     };
 
     const handleDeletarProduto = async (produtoId: string) => {
+        if (!confirm('Tem certeza que deseja deletar este produto? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+        
         try {
-            console.log('🗑️ [Produtos] Deletando produto:', produtoId);
-            console.log('📡 [Produtos] Chamando DELETE /api/produtos/' + produtoId);
             await produtosService.inativar(produtoId);
-            console.log('✅ [Produtos] Produto deletado com sucesso');
             await recarregarProdutos();
-        } catch (err) {
-            console.error('❌ [Produtos] Erro ao deletar produto:', err);
-            alert('Erro ao deletar produto. Tente novamente.');
+        } catch (err: any) {
+            const errorMessage = err?.response?.data?.message || err?.message || 'Erro ao deletar produto. Tente novamente.';
+            alert(errorMessage);
         }
     };
 

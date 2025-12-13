@@ -3,6 +3,8 @@ import Modal from '../Modal/Modal';
 import ModalFormField from '../Modal/ModalFormField';
 import ModalActions from '../Modal/ModalActions';
 import ModalInfoBox from '../Modal/ModalInfoBox';
+import { estoquesService } from '../../services/estoques';
+import { Estoque } from '../../types/entities';
 
 interface ProdutoData {
     codigo: string;
@@ -29,6 +31,8 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
     const [perecivel, setPerecivel] = useState(false);
     const [ativo, setAtivo] = useState(true);
     const [estoquesVinculados, setEstoquesVinculados] = useState<string[]>([]);
+    const [estoques, setEstoques] = useState<Estoque[]>([]);
+    const [carregandoEstoques, setCarregandoEstoques] = useState(false);
 
     useEffect(() => {
         if (initialData) {
@@ -50,6 +54,29 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
         }
     }, [initialData, isOpen]);
 
+    useEffect(() => {
+        if (isOpen) {
+            const carregarEstoques = async () => {
+                try {
+                    console.log('🔄 [CadastrarProdutoModal] Carregando estoques...');
+                    setCarregandoEstoques(true);
+                    const response = await estoquesService.listar();
+                    console.log('✅ [CadastrarProdutoModal] Resposta de estoques:', response);
+                    const estoquesData = Array.isArray(response) ? response : (response.content || []);
+                    const estoquesValidos = estoquesData.filter((estoque: Estoque) => estoque != null && estoque.id != null);
+                    const estoquesAtivos = estoquesValidos.filter((e: Estoque) => e.ativo);
+                    setEstoques(estoquesAtivos);
+                    console.log('📋 [CadastrarProdutoModal] Estoques carregados:', estoquesAtivos.length, 'itens');
+                } catch (error) {
+                    console.error('❌ [CadastrarProdutoModal] Erro ao carregar estoques:', error);
+                } finally {
+                    setCarregandoEstoques(false);
+                }
+            };
+            carregarEstoques();
+        }
+    }, [isOpen]);
+
     const handleConfirm = () => {
         const form = document.getElementById('form-cadastrar-produto') as HTMLFormElement;
         if (form && !form.checkValidity()) {
@@ -57,10 +84,8 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
             return;
         }
 
-        if (estoquesVinculados.length === 0) {
-            alert('Produto deve estar vinculado a pelo menos um estoque ativo');
-            return;
-        }
+        // Validação de estoques vinculados removida temporariamente
+        // TODO: Implementar quando o backend suportar vinculação de estoques
 
         onConfirm({
             codigo,
@@ -157,23 +182,35 @@ function CadastrarProdutoModal({ isOpen, onClose, onConfirm, initialData }: Cada
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>
                     Estoques Vinculados <span style={{ color: '#dc2626' }}>*</span>
                 </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {['1', '2', '3'].map((estoqueId) => (
-                        <label key={estoqueId} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                            <input
-                                type="checkbox"
-                                checked={estoquesVinculados.includes(estoqueId)}
-                                onChange={() => toggleEstoque(estoqueId)}
-                                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                            />
-                            <span style={{ fontSize: '14px', color: '#1f2937' }}>Estoque {estoqueId}</span>
-                        </label>
-                    ))}
-                </div>
-                {estoquesVinculados.length === 0 && (
-                    <span style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', display: 'block' }}>
-                        Selecione pelo menos um estoque ativo
-                    </span>
+                {carregandoEstoques ? (
+                    <div style={{ padding: '12px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                        Carregando estoques...
+                    </div>
+                ) : estoques.length === 0 ? (
+                    <div style={{ padding: '12px', textAlign: 'center', color: '#dc2626', fontSize: '14px' }}>
+                        Nenhum estoque ativo disponível
+                    </div>
+                ) : (
+                    <>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {estoques.map((estoque) => (
+                                <label key={estoque.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={estoquesVinculados.includes(estoque.id.toString())}
+                                        onChange={() => toggleEstoque(estoque.id.toString())}
+                                        style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                                    />
+                                    <span style={{ fontSize: '14px', color: '#1f2937' }}>{estoque.nome}</span>
+                                </label>
+                            ))}
+                        </div>
+                        {estoquesVinculados.length === 0 && (
+                            <span style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', display: 'block' }}>
+                                Selecione pelo menos um estoque ativo
+                            </span>
+                        )}
+                    </>
                 )}
             </div>
             <ModalFormField
