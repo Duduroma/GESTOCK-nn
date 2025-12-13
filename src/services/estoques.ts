@@ -6,6 +6,8 @@ interface ListEstoquesParams extends Record<string, string | number | boolean | 
     nome?: string;
     endereco?: string;
     ativo?: boolean;
+    busca?: string;
+    status?: string;
     page?: number;
     size?: number;
 }

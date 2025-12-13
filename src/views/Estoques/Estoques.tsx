@@ -16,6 +16,8 @@ function Estoques(): React.ReactElement {
     const [estoques, setEstoques] = useState<Estoque[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [busca, setBusca] = useState('');
+    const [filtroStatus, setFiltroStatus] = useState<string>('');
 
     useEffect(() => {
         const carregarEstoques = async () => {
@@ -24,7 +26,10 @@ function Estoques(): React.ReactElement {
                 setLoading(true);
                 setError(null);
                 console.log('📡 Chamando estoquesService.listar()...');
-                const response = await estoquesService.listar();
+                const params: any = {};
+                if (busca) params.busca = busca;
+                if (filtroStatus) params.status = filtroStatus;
+                const response = await estoquesService.listar(params);
                 console.log('✅ Resposta recebida da API:', response);
                 console.log('📦 Tipo da resposta:', Array.isArray(response) ? 'Array' : 'Objeto');
                 const estoquesData = Array.isArray(response) ? response : (response.content || []);
@@ -43,7 +48,7 @@ function Estoques(): React.ReactElement {
         };
 
         carregarEstoques();
-    }, []);
+    }, [busca, filtroStatus]);
     
     const handleEditarEstoque = async (itemId: string) => {
         try {
@@ -72,7 +77,10 @@ function Estoques(): React.ReactElement {
             console.log('🔄 [Estoques] Recarregando lista de estoques...');
             setLoading(true);
             console.log('📡 [Estoques] Chamando GET /api/estoques');
-            const response = await estoquesService.listar();
+            const params: any = {};
+            if (busca) params.busca = busca;
+            if (filtroStatus) params.status = filtroStatus;
+            const response = await estoquesService.listar(params);
             console.log('✅ [Estoques] Resposta recebida:', response);
             const estoquesData = Array.isArray(response) ? response : (response.content || []);
             console.log('📦 [Estoques] Estoques processados:', estoquesData.length, 'itens');
@@ -103,26 +111,10 @@ function Estoques(): React.ReactElement {
         }
     });
 
-    const [busca, setBusca] = useState('');
-    const [filtroStatus, setFiltroStatus] = useState<string>('');
-
     const estoquesFiltrados = useMemo(() => {
-        console.log('🔍 Aplicando filtros:', { busca, filtroStatus });
-        const filtrados = estoques
-            .filter(estoque => estoque != null && estoque.id != null)
-            .filter(estoque => {
-                const matchBusca = !busca || 
-                    (estoque.nome && estoque.nome.toLowerCase().includes(busca.toLowerCase())) ||
-                    (estoque.endereco && estoque.endereco.toLowerCase().includes(busca.toLowerCase()));
-                const matchStatus = !filtroStatus || 
-                    (filtroStatus === 'ativo' && estoque.ativo) ||
-                    (filtroStatus === 'inativo' && !estoque.ativo);
-                
-                return matchBusca && matchStatus;
-            });
-        console.log(`📊 Total de estoques filtrados: ${filtrados.length} de ${estoques.length}`);
-        return filtrados;
-    }, [estoques, busca, filtroStatus]);
+        console.log('📋 Exibindo estoques (filtros aplicados no backend):', estoques.length);
+        return estoques.filter(estoque => estoque != null && estoque.id != null);
+    }, [estoques]);
 
     const handleConfirm = async (data: {
         clienteId: string;

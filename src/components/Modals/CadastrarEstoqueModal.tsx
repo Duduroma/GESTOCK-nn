@@ -91,6 +91,11 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
             return;
         }
 
+        if (!capacidade || capacidade <= 0) {
+            alert('A capacidade deve ser maior que zero');
+            return;
+        }
+
         onConfirm({ clienteId, nome, endereco, capacidade, ativo });
         if (!initialData) {
             setClienteId('');
@@ -149,8 +154,12 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
                 label="Capacidade Máxima"
                 type="number"
                 value={capacidade.toString()}
-                onChange={(e) => setCapacidade(parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    setCapacidade(value > 0 ? value : 0);
+                }}
                 required
+                min={1}
             />
             <ModalFormField
                 label="Ativo"

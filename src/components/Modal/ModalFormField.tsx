@@ -7,6 +7,8 @@ interface ModalFormFieldProps {
     required?: boolean;
     options?: Array<{ value: string; label: string }>;
     rows?: number;
+    min?: number;
+    disabled?: boolean;
 }
 
 function ModalFormField({
@@ -17,7 +19,9 @@ function ModalFormField({
     onChange,
     required = false,
     options,
-    rows = 4
+    rows = 4,
+    min,
+    disabled = false
 }: ModalFormFieldProps): React.ReactElement {
     const baseInputStyle = {
         width: '100%',
@@ -80,6 +84,8 @@ function ModalFormField({
                     value={value}
                     onChange={onChange}
                     required={required}
+                    min={min}
+                    disabled={disabled}
                     style={baseInputStyle}
                 />
             )}
