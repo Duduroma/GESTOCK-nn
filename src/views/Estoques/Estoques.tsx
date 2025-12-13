@@ -166,7 +166,7 @@ function Estoques(): React.ReactElement {
                 console.log('➕ Criando novo estoque...');
                 console.log('📝 Dados para criar:', data);
                 const novoEstoque = await estoquesService.criar({
-                    clienteId: data.clienteId,
+                    clienteId: parseInt(data.clienteId) as any,
                     nome: data.nome,
                     endereco: data.endereco,
                     capacidade: data.capacidade,

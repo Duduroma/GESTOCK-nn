@@ -11,7 +11,7 @@ interface ListEstoquesParams extends Record<string, string | number | boolean | 
 }
 
 interface CreateEstoqueData {
-    clienteId: ClienteId;
+    clienteId: number | string;
     nome: string;
     endereco: string;
     capacidade: number;

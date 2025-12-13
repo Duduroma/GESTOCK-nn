@@ -3,6 +3,8 @@ import Modal from '../Modal/Modal';
 import ModalFormField from '../Modal/ModalFormField';
 import ModalActions from '../Modal/ModalActions';
 import ModalInfoBox from '../Modal/ModalInfoBox';
+import { clientesService } from '../../services/clientes';
+import { Cliente } from '../../types/entities';
 
 interface EstoqueData {
     clienteId: string;
@@ -25,6 +27,26 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
     const [endereco, setEndereco] = useState('');
     const [capacidade, setCapacidade] = useState<number>(0);
     const [ativo, setAtivo] = useState(true);
+    const [clientes, setClientes] = useState<Cliente[]>([]);
+    const [carregandoClientes, setCarregandoClientes] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && !initialData) {
+            const carregarClientes = async () => {
+                try {
+                    setCarregandoClientes(true);
+                    const response = await clientesService.listar();
+                    const clientesList = Array.isArray(response) ? response : (response.content || []);
+                    setClientes(clientesList);
+                } catch (error) {
+                    console.error('Erro ao carregar clientes:', error);
+                } finally {
+                    setCarregandoClientes(false);
+                }
+            };
+            carregarClientes();
+        }
+    }, [isOpen, initialData]);
 
     useEffect(() => {
         if (initialData) {
@@ -81,16 +103,15 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
             <ModalFormField
                 label="Cliente"
                 type="select"
-                placeholder="Selecione o cliente"
+                placeholder={carregandoClientes ? "Carregando clientes..." : "Selecione o cliente"}
                 value={clienteId}
                 onChange={(e) => setClienteId(e.target.value)}
-                options={[
-                    { value: '1', label: 'Cliente 1' },
-                    { value: '2', label: 'Cliente 2' },
-                    { value: '3', label: 'Cliente 3' },
-                    { value: '4', label: 'Cliente 4' }
-                ]}
+                options={clientes.map(cliente => ({
+                    value: cliente.id?.toString() || '',
+                    label: cliente.nome || ''
+                }))}
                 required
+                disabled={carregandoClientes}
             />
             <ModalFormField
                 label="Nome do Estoque"
