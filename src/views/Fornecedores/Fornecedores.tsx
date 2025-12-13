@@ -8,7 +8,7 @@ import IconButton from '../../components/IconButton';
 import ActionButton from '../../components/ActionButton';
 import CadastrarFornecedorModal from '../../components/Modals/CadastrarFornecedorModal';
 import useTablePage from '../../hooks/useTablePage';
-import { Fornecedor, FornecedorId, LeadTime } from '../../types/entities';
+import { Fornecedor, LeadTime } from '../../types/entities';
 import { fornecedoresService } from '../../services/fornecedores';
 
 function Fornecedores(): React.ReactElement {
@@ -20,21 +20,42 @@ function Fornecedores(): React.ReactElement {
     useEffect(() => {
         const carregarFornecedores = async () => {
             try {
-                console.log('🔄 [Fornecedores] Iniciando carregamento de fornecedores...');
+                console.log('🔄 [Fornecedores] ========== INICIANDO CARREGAMENTO ==========');
                 setLoading(true);
                 setError(null);
-                console.log('📡 [Fornecedores] Chamando GET /api/fornecedores');
+                console.log('📡 [Fornecedores] Chamando fornecedoresService.listar()');
                 const response = await fornecedoresService.listar();
-                console.log('✅ [Fornecedores] Resposta recebida:', response);
+                console.log('✅ [Fornecedores] Resposta bruta recebida:', response);
+                console.log('📊 [Fornecedores] Tipo da resposta:', Array.isArray(response) ? 'Array' : typeof response);
+                console.log('📊 [Fornecedores] É array?', Array.isArray(response));
+                
                 const fornecedoresData = Array.isArray(response) ? response : (response.content || []);
                 console.log('📦 [Fornecedores] Fornecedores processados:', fornecedoresData.length, 'itens');
+                
+                if (fornecedoresData.length > 0) {
+                    console.log('📋 [Fornecedores] Primeiro fornecedor:', fornecedoresData[0]);
+                    console.log('📋 [Fornecedores] Estrutura do primeiro fornecedor:', {
+                        id: fornecedoresData[0].id,
+                        nome: fornecedoresData[0].nome,
+                        leadTimeMedio: fornecedoresData[0].leadTimeMedio,
+                        tipoLeadTime: typeof fornecedoresData[0].leadTimeMedio
+                    });
+                }
+                
                 setFornecedores(fornecedoresData);
-            } catch (err) {
+                console.log('✅ [Fornecedores] Estado atualizado com', fornecedoresData.length, 'fornecedores');
+            } catch (err: any) {
                 console.error('❌ [Fornecedores] Erro ao carregar fornecedores:', err);
+                console.error('❌ [Fornecedores] Detalhes do erro:', {
+                    message: err?.message,
+                    status: err?.response?.status,
+                    data: err?.response?.data,
+                    stack: err?.stack
+                });
                 setError('Erro ao carregar fornecedores. Verifique se o backend está rodando.');
             } finally {
                 setLoading(false);
-                console.log('🏁 [Fornecedores] Carregamento finalizado');
+                console.log('🏁 [Fornecedores] ========== CARREGAMENTO FINALIZADO ==========');
             }
         };
 
@@ -47,31 +68,42 @@ function Fornecedores(): React.ReactElement {
 
     const handleDeletar = async (fornecedorId: string) => {
         try {
-            console.log('🗑️ [Fornecedores] Deletando fornecedor:', fornecedorId);
-            console.log('📡 [Fornecedores] Chamando DELETE /api/fornecedores/' + fornecedorId);
+            console.log('🗑️ [Fornecedores] ========== INATIVANDO FORNECEDOR ==========');
+            console.log('🗑️ [Fornecedores] ID do fornecedor:', fornecedorId);
             await fornecedoresService.inativar(fornecedorId);
-            console.log('✅ [Fornecedores] Fornecedor deletado com sucesso');
+            console.log('✅ [Fornecedores] Fornecedor inativado com sucesso');
             await recarregarFornecedores();
-        } catch (err) {
-            console.error('❌ [Fornecedores] Erro ao deletar fornecedor:', err);
+        } catch (err: any) {
+            console.error('❌ [Fornecedores] Erro ao inativar fornecedor:', err);
+            console.error('❌ [Fornecedores] Detalhes:', {
+                message: err?.message,
+                status: err?.response?.status,
+                data: err?.response?.data
+            });
             alert('Erro ao deletar fornecedor. Tente novamente.');
         }
     };
 
     const recarregarFornecedores = async () => {
         try {
-            console.log('🔄 [Fornecedores] Recarregando lista de fornecedores...');
+            console.log('🔄 [Fornecedores] ========== RECARREGANDO LISTA ==========');
             setLoading(true);
-            console.log('📡 [Fornecedores] Chamando GET /api/fornecedores');
             const response = await fornecedoresService.listar();
-            console.log('✅ [Fornecedores] Resposta recebida:', response);
+            console.log('✅ [Fornecedores] Resposta do recarregamento:', response);
             const fornecedoresData = Array.isArray(response) ? response : (response.content || []);
             console.log('📦 [Fornecedores] Fornecedores recarregados:', fornecedoresData.length, 'itens');
             setFornecedores(fornecedoresData);
-        } catch (err) {
+            console.log('✅ [Fornecedores] Estado atualizado com', fornecedoresData.length, 'fornecedores');
+        } catch (err: any) {
             console.error('❌ [Fornecedores] Erro ao recarregar fornecedores:', err);
+            console.error('❌ [Fornecedores] Detalhes:', {
+                message: err?.message,
+                status: err?.response?.status,
+                data: err?.response?.data
+            });
         } finally {
             setLoading(false);
+            console.log('🏁 [Fornecedores] Recarregamento finalizado');
         }
     };
 
@@ -84,32 +116,59 @@ function Fornecedores(): React.ReactElement {
     }) => {
         try {
             if (fornecedorEditando) {
-                console.log('✏️ [Fornecedores] Editando fornecedor:', fornecedorEditando.id);
-                console.log('📡 [Fornecedores] Chamando PUT /api/fornecedores/' + fornecedorEditando.id);
-                console.log('📝 [Fornecedores] Dados para atualizar:', { nome: data.nome, contato: data.contato });
-                await fornecedoresService.atualizar(fornecedorEditando.id, {
-                    nome: data.nome,
-                    contato: data.contato
+                console.log('✏️ [Fornecedores] ========== EDITANDO FORNECEDOR ==========');
+                console.log('✏️ [Fornecedores] ID do fornecedor:', fornecedorEditando.id);
+                console.log('📝 [Fornecedores] Dados recebidos do modal:', data);
+                console.log('📝 [Fornecedores] Dados para atualizar:', { 
+                    nome: data.nome, 
+                    contato: data.contato,
+                    leadTimeMedio: data.leadTimeMedio
                 });
+                
+                const updateData = {
+                    nome: data.nome,
+                    contato: data.contato,
+                    leadTimeMedio: { dias: data.leadTimeMedio } as LeadTime
+                };
+                console.log('📤 [Fornecedores] Enviando para API:', JSON.stringify(updateData, null, 2));
+                
+                const response = await fornecedoresService.atualizar(fornecedorEditando.id, updateData);
+                console.log('✅ [Fornecedores] Resposta da atualização:', response);
                 console.log('✅ [Fornecedores] Fornecedor atualizado com sucesso');
+                
                 await recarregarFornecedores();
                 setItemEditando(null);
             } else {
-                console.log('➕ [Fornecedores] Criando novo fornecedor...');
-                console.log('📡 [Fornecedores] Chamando POST /api/fornecedores');
-                console.log('📝 [Fornecedores] Dados para criar:', data);
-                await fornecedoresService.criar({
+                console.log('➕ [Fornecedores] ========== CRIANDO FORNECEDOR ==========');
+                console.log('📝 [Fornecedores] Dados recebidos do modal:', data);
+                
+                const createData = {
                     nome: data.nome,
                     cnpj: data.cnpj,
                     contato: data.contato,
                     leadTimeMedio: { dias: data.leadTimeMedio } as LeadTime,
                     ativo: data.ativo
-                });
+                };
+                console.log('📤 [Fornecedores] Dados formatados para envio:', JSON.stringify(createData, null, 2));
+                console.log('📤 [Fornecedores] Estrutura leadTimeMedio:', createData.leadTimeMedio);
+                
+                const response = await fornecedoresService.criar(createData);
+                console.log('✅ [Fornecedores] Resposta da criação:', response);
                 console.log('✅ [Fornecedores] Fornecedor criado com sucesso');
+                
                 await recarregarFornecedores();
             }
-        } catch (err) {
-            console.error('❌ [Fornecedores] Erro ao salvar fornecedor:', err);
+        } catch (err: any) {
+            console.error('❌ [Fornecedores] ========== ERRO AO SALVAR ==========');
+            console.error('❌ [Fornecedores] Erro completo:', err);
+            console.error('❌ [Fornecedores] Detalhes do erro:', {
+                message: err?.message,
+                status: err?.response?.status,
+                statusText: err?.response?.statusText,
+                data: err?.response?.data,
+                url: err?.config?.url,
+                method: err?.config?.method
+            });
             alert('Erro ao salvar fornecedor. Tente novamente.');
         }
     };
