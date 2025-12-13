@@ -68,7 +68,7 @@ export const fornecedoresService = {
     },
 
     registrarCotacao: async (fornecedorId: FornecedorId, data: CreateCotacaoData): Promise<Cotacao> => {
-        return api.post(`/fornecedores/${fornecedorId}/cotacoes`, data);
+        return api.post(`/fornecedores/${fornecedorId}/cotacao`, data);
     },
 
     atualizarCotacao: async (fornecedorId: FornecedorId, cotacaoId: CotacaoId, data: UpdateCotacaoData): Promise<Cotacao> => {

@@ -50,5 +50,9 @@ export const alertasService = {
     gerarPedido: async (id: AlertaId): Promise<{ id: string }> => {
         return api.post(`/alertas/${id}/gerar-pedido`, {});
     },
+
+    listarAtivos: async (): Promise<Alerta[]> => {
+        return api.get('/alertas/ativos');
+    },
 };
 

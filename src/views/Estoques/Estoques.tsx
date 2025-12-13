@@ -69,26 +69,18 @@ function Estoques(): React.ReactElement {
 
     const recarregarEstoques = async () => {
         try {
-            console.log('🔄 Recarregando lista de estoques do backend...');
+            console.log('🔄 [Estoques] Recarregando lista de estoques...');
             setLoading(true);
+            console.log('📡 [Estoques] Chamando GET /api/estoques');
             const response = await estoquesService.listar();
-            console.log('📥 Resposta completa do backend:', response);
+            console.log('✅ [Estoques] Resposta recebida:', response);
             const estoquesData = Array.isArray(response) ? response : (response.content || []);
-            console.log('📋 Estoques extraídos:', estoquesData);
-            console.log('🔍 Verificando campo ativo de cada estoque:');
-            estoquesData.forEach((estoque, index) => {
-                console.log(`  Estoque ${index}: id=${estoque?.id}, ativo=${estoque?.ativo}, nome=${estoque?.nome}`);
-            });
+            console.log('📦 [Estoques] Estoques processados:', estoquesData.length, 'itens');
             const estoquesValidos = estoquesData.filter(estoque => estoque != null && estoque.id != null);
-            console.log('✅ Lista recarregada:', estoquesValidos.length, 'estoques válidos');
-            console.log('📊 Resumo de status:', {
-                ativos: estoquesValidos.filter(e => e.ativo === true).length,
-                inativos: estoquesValidos.filter(e => e.ativo === false).length,
-                undefined: estoquesValidos.filter(e => e.ativo === undefined).length
-            });
+            console.log('✅ [Estoques] Estoques válidos:', estoquesValidos.length);
             setEstoques(estoquesValidos);
         } catch (err) {
-            console.error('❌ Erro ao recarregar estoques:', err);
+            console.error('❌ [Estoques] Erro ao recarregar estoques:', err);
         } finally {
             setLoading(false);
         }
@@ -98,17 +90,14 @@ function Estoques(): React.ReactElement {
         onView: () => navigate('/produtos'),
         onDelete: async (itemId: string) => {
             try {
-                console.log('🗑️ Deletando estoque:', itemId);
-                console.log('📡 Chamando DELETE /estoques/apagar/' + itemId);
-                console.log('📋 Estado atual dos estoques ANTES de deletar:', estoques);
+                console.log('🗑️ [Estoques] Deletando estoque:', itemId);
+                console.log('📡 [Estoques] Chamando DELETE /api/estoques/' + itemId);
                 await estoquesService.deletar(itemId);
-                console.log('✅ Estoque deletado com sucesso no backend');
-                console.log('🔄 Recarregando lista de estoques...');
+                console.log('✅ [Estoques] Estoque deletado com sucesso');
                 await recarregarEstoques();
-                console.log('📋 Estado atual dos estoques DEPOIS de recarregar:', estoques);
             } catch (err) {
-                console.error('❌ Erro ao deletar estoque:', err);
-                console.error('❌ Detalhes do erro:', JSON.stringify(err, null, 2));
+                console.error('❌ [Estoques] Erro ao deletar estoque:', err);
+                console.error('❌ [Estoques] Detalhes do erro:', JSON.stringify(err, null, 2));
                 alert('Erro ao deletar estoque. Tente novamente.');
             }
         }
@@ -144,22 +133,22 @@ function Estoques(): React.ReactElement {
     }) => {
         try {
             if (estoqueEditando) {
-                console.log('✏️ Editando estoque:', estoqueEditando.id);
-                console.log('📡 Chamando PUT /estoques/' + estoqueEditando.id);
-                console.log('📝 Dados para atualizar:', data);
+                console.log('✏️ [Estoques] Editando estoque:', estoqueEditando.id);
+                console.log('📡 [Estoques] Chamando PUT /api/estoques/' + estoqueEditando.id);
+                console.log('📝 [Estoques] Dados para atualizar:', data);
                 const estoqueAtualizado = await estoquesService.atualizar(estoqueEditando.id, {
                     nome: data.nome,
                     endereco: data.endereco,
                     capacidade: data.capacidade,
                     ativo: data.ativo
                 });
-                console.log('✅ Estoque atualizado com sucesso:', estoqueAtualizado);
-                console.log('🔄 Recarregando lista de estoques do backend...');
+                console.log('✅ [Estoques] Estoque atualizado com sucesso:', estoqueAtualizado);
                 await recarregarEstoques();
                 setItemEditando(null);
             } else {
-                console.log('➕ Criando novo estoque...');
-                console.log('📝 Dados para criar:', data);
+                console.log('➕ [Estoques] Criando novo estoque...');
+                console.log('📡 [Estoques] Chamando POST /api/estoques');
+                console.log('📝 [Estoques] Dados para criar:', data);
                 const novoEstoque = await estoquesService.criar({
                     clienteId: parseInt(data.clienteId) as any,
                     nome: data.nome,
@@ -167,13 +156,12 @@ function Estoques(): React.ReactElement {
                     capacidade: data.capacidade,
                     ativo: data.ativo
                 });
-                console.log('✅ Estoque criado com sucesso:', novoEstoque);
-                console.log('🔄 Recarregando lista de estoques do backend...');
+                console.log('✅ [Estoques] Estoque criado com sucesso:', novoEstoque);
                 await recarregarEstoques();
             }
         } catch (err) {
-            console.error('❌ Erro ao salvar estoque:', err);
-            console.error('❌ Detalhes do erro:', JSON.stringify(err, null, 2));
+            console.error('❌ [Estoques] Erro ao salvar estoque:', err);
+            console.error('❌ [Estoques] Detalhes do erro:', JSON.stringify(err, null, 2));
             alert('Erro ao salvar estoque. Tente novamente.');
         }
     };

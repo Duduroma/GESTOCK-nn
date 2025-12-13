@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MainLayout from '../../components/MainLayout';
 import PageHeader from '../../components/PageHeader';
 import { Table, TableRow, TableCell } from '../../components/Table';
@@ -6,13 +6,53 @@ import SummaryCard from '../../components/SummaryCard';
 import InfoBox from '../../components/InfoBox';
 import Badge from '../../components/Badge';
 import { Alerta, AlertaId, ProdutoId, EstoqueId, FornecedorId } from '../../types/entities';
-import { mockAlertas } from '../../utils/mocks';
+import { alertasService } from '../../services/alertas';
 
 function Alertas(): React.ReactElement {
-    const [alertas, setAlertas] = useState<Alerta[]>(mockAlertas);
+    const [alertas, setAlertas] = useState<Alerta[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleGerarPedido = (alertaId: AlertaId) => {
-        console.log('pedido gerado');
+    useEffect(() => {
+        const carregarAlertas = async () => {
+            try {
+                console.log('🔄 [Alertas] Iniciando carregamento de alertas...');
+                setLoading(true);
+                setError(null);
+                console.log('📡 [Alertas] Chamando GET /api/alertas/ativos');
+                const response = await alertasService.listarAtivos();
+                console.log('✅ [Alertas] Resposta recebida:', response);
+                const alertasData = Array.isArray(response) ? response : [];
+                console.log('📦 [Alertas] Alertas processados:', alertasData.length, 'itens');
+                setAlertas(alertasData);
+            } catch (err) {
+                console.error('❌ [Alertas] Erro ao carregar alertas:', err);
+                setError('Erro ao carregar alertas. Verifique se o backend está rodando.');
+            } finally {
+                setLoading(false);
+                console.log('🏁 [Alertas] Carregamento finalizado');
+            }
+        };
+
+        carregarAlertas();
+    }, []);
+
+    const handleGerarPedido = async (alertaId: AlertaId) => {
+        try {
+            console.log('🛒 [Alertas] Gerando pedido para alerta:', alertaId);
+            console.log('📡 [Alertas] Chamando POST /api/alertas/' + alertaId + '/gerar-pedido');
+            await alertasService.gerarPedido(alertaId);
+            console.log('✅ [Alertas] Pedido gerado com sucesso');
+            // Recarregar alertas após gerar pedido
+            console.log('🔄 [Alertas] Recarregando lista de alertas...');
+            const response = await alertasService.listarAtivos();
+            console.log('✅ [Alertas] Alertas recarregados:', response.length, 'itens');
+            const alertasData = Array.isArray(response) ? response : [];
+            setAlertas(alertasData);
+        } catch (err) {
+            console.error('❌ [Alertas] Erro ao gerar pedido:', err);
+            alert('Erro ao gerar pedido. Tente novamente.');
+        }
     };
 
     const alertasAtivos = alertas.filter(a => a.ativo);
@@ -50,8 +90,35 @@ function Alertas(): React.ReactElement {
                 />
             </div>
 
-            <Table headers={['Produto', 'Estoque', 'Fornecedor Sugerido', 'Data do Alerta', 'Ações']}>
-                {alertasAtivos.map((alerta) => (
+            {loading && (
+                <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
+                    Carregando alertas...
+                </div>
+            )}
+
+            {error && (
+                <div style={{ 
+                    padding: '16px', 
+                    backgroundColor: '#fee2e2', 
+                    border: '1px solid #fca5a5', 
+                    borderRadius: '6px', 
+                    color: '#991b1b',
+                    marginBottom: '24px'
+                }}>
+                    {error}
+                </div>
+            )}
+
+            {!loading && !error && (
+                <Table headers={['Produto', 'Estoque', 'Fornecedor Sugerido', 'Data do Alerta', 'Ações']}>
+                    {alertasAtivos.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={5} style={{ textAlign: 'center', color: '#6b7280' }}>
+                                Nenhum alerta ativo encontrado
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        alertasAtivos.map((alerta) => (
                     <TableRow key={alerta.id}>
                         <TableCell>Produto {alerta.produtoId}</TableCell>
                         <TableCell>Estoque {alerta.estoqueId}</TableCell>
@@ -89,8 +156,10 @@ function Alertas(): React.ReactElement {
                             </button>
                         </TableCell>
                     </TableRow>
-                ))}
-            </Table>
+                        ))
+                    )}
+                </Table>
+            )}
 
             <InfoBox
                 title="Funcionamento dos Alertas"

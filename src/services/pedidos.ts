@@ -46,7 +46,13 @@ export const pedidosService = {
         return api.get(`/pedidos/${id}`);
     },
 
-    criar: async (data: CreatePedidoData): Promise<Pedido> => {
+    criar: async (data: {
+        clienteId: ClienteId;
+        fornecedorId: FornecedorId;
+        produtoId: string;
+        quantidade: number;
+        estoqueId?: EstoqueId;
+    }): Promise<Pedido> => {
         return api.post('/pedidos', data);
     },
 
@@ -55,19 +61,19 @@ export const pedidosService = {
     },
 
     enviar: async (id: PedidoId): Promise<void> => {
-        return api.patch(`/pedidos/${id}/enviar`);
+        return api.post(`/pedidos/${id}/enviar`);
     },
 
     iniciarTransporte: async (id: PedidoId): Promise<void> => {
         return api.patch(`/pedidos/${id}/iniciar-transporte`);
     },
 
-    confirmarRecebimento: async (id: PedidoId): Promise<void> => {
-        return api.patch(`/pedidos/${id}/confirmar-recebimento`);
+    confirmarRecebimento: async (id: PedidoId, data: { estoqueId: EstoqueId; responsavel: string }): Promise<void> => {
+        return api.post(`/pedidos/${id}/receber`, data);
     },
 
     cancelar: async (id: PedidoId): Promise<void> => {
-        return api.patch(`/pedidos/${id}/cancelar`);
+        return api.post(`/pedidos/${id}/cancelar`);
     },
 
     concluir: async (id: PedidoId): Promise<void> => {

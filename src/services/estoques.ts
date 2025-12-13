@@ -124,5 +124,24 @@ export const estoquesService = {
     }> => {
         return api.get(`/estoques/${estoqueId}/produtos/${produtoId}/atingiu-rop`);
     },
+
+    registrarEntrada: async (estoqueId: EstoqueId, data: {
+        produtoId: ProdutoId;
+        quantidade: number;
+        responsavel: string;
+        motivo: string;
+        metadados?: Record<string, any>;
+    }): Promise<void> => {
+        return api.post(`/estoques/${estoqueId}/entrada`, data);
+    },
+
+    registrarSaida: async (estoqueId: EstoqueId, data: {
+        produtoId: ProdutoId;
+        quantidade: number;
+        responsavel: string;
+        motivo: string;
+    }): Promise<void> => {
+        return api.post(`/estoques/${estoqueId}/saida`, data);
+    },
 };
 
