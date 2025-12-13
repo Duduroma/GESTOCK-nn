@@ -58,12 +58,29 @@ async function request(endpoint: string, options: RequestOptions = {}): Promise<
         }
         
         const data = await response.json();
-        console.log('📦 [API] Dados da resposta:', data);
+        console.log('📦 [API] Dados da resposta (raw):', data);
+        console.log('📦 [API] Tipo da resposta:', typeof data);
+        console.log('📦 [API] É array?', Array.isArray(data));
+        
+        if (data && typeof data === 'object') {
+            console.log('📦 [API] Keys da resposta:', Object.keys(data));
+            if (Array.isArray(data)) {
+                console.log('📦 [API] Tamanho do array:', data.length);
+                if (data.length > 0) {
+                    console.log('📦 [API] Primeiro item:', data[0]);
+                }
+            } else if ('content' in data) {
+                console.log('📦 [API] Content (array):', data.content);
+                console.log('📦 [API] Total de elementos:', data.totalElements);
+                console.log('📦 [API] Tamanho do content:', Array.isArray(data.content) ? data.content.length : 'não é array');
+            }
+        }
         
         if (!response.ok) {
             console.error('❌ [API] Erro na resposta:', data);
             
             if (response.status === 401) {
+                console.error('❌ [API] Não autorizado (401). Redirecionando para o login.');
                 localStorage.removeItem('authToken');
                 const currentPath = window.location.pathname;
                 if (currentPath !== '/login' && currentPath !== '/cadastro') {

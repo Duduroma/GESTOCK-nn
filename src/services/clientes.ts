@@ -30,7 +30,30 @@ interface PaginatedResponse<T> {
 
 export const clientesService = {
     listar: async (params?: ListClientesParams): Promise<PaginatedResponse<Cliente>> => {
-        return api.get('/clientes', params);
+        console.log('📋 [ClientesService] Listando clientes com params:', params);
+        try {
+            const response = await api.get('/clientes', params);
+            console.log('✅ [ClientesService] Resposta recebida:', response);
+            console.log('📦 [ClientesService] Tipo da resposta:', typeof response);
+            console.log('📦 [ClientesService] É array?', Array.isArray(response));
+            if (response && typeof response === 'object') {
+                console.log('📦 [ClientesService] Keys da resposta:', Object.keys(response));
+                if ('content' in response) {
+                    console.log('📦 [ClientesService] Content:', response.content);
+                    console.log('📦 [ClientesService] Total de clientes:', response.content?.length || 0);
+                }
+            }
+            return response;
+        } catch (error: any) {
+            console.error('❌ [ClientesService] Erro ao listar clientes:', error);
+            console.error('❌ [ClientesService] Detalhes do erro:', {
+                message: error?.message,
+                status: error?.response?.status,
+                data: error?.response?.data,
+                stack: error?.stack
+            });
+            throw error;
+        }
     },
 
     buscarPorId: async (id: ClienteId): Promise<Cliente> => {

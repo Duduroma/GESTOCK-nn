@@ -34,12 +34,30 @@ function CadastrarEstoqueModal({ isOpen, onClose, onConfirm, initialData }: Cada
         if (isOpen && !initialData) {
             const carregarClientes = async () => {
                 try {
+                    console.log('🔄 [CadastrarEstoqueModal] Iniciando carregamento de clientes...');
                     setCarregandoClientes(true);
                     const response = await clientesService.listar();
+                    console.log('📥 [CadastrarEstoqueModal] Resposta do serviço:', response);
+                    console.log('📥 [CadastrarEstoqueModal] Tipo da resposta:', typeof response);
+                    console.log('📥 [CadastrarEstoqueModal] É array?', Array.isArray(response));
+                    
                     const clientesList = Array.isArray(response) ? response : (response.content || []);
+                    console.log('📋 [CadastrarEstoqueModal] Lista de clientes processada:', clientesList);
+                    console.log('📋 [CadastrarEstoqueModal] Total de clientes:', clientesList.length);
+                    
+                    if (clientesList.length > 0) {
+                        console.log('📋 [CadastrarEstoqueModal] Primeiro cliente:', clientesList[0]);
+                    }
+                    
                     setClientes(clientesList);
-                } catch (error) {
-                    console.error('Erro ao carregar clientes:', error);
+                    console.log('✅ [CadastrarEstoqueModal] Clientes carregados com sucesso');
+                } catch (error: any) {
+                    console.error('❌ [CadastrarEstoqueModal] Erro ao carregar clientes:', error);
+                    console.error('❌ [CadastrarEstoqueModal] Detalhes:', {
+                        message: error?.message,
+                        status: error?.response?.status,
+                        data: error?.response?.data
+                    });
                 } finally {
                     setCarregandoClientes(false);
                 }

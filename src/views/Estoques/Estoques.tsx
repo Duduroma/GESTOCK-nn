@@ -154,13 +154,8 @@ function Estoques(): React.ReactElement {
                     ativo: data.ativo
                 });
                 console.log('✅ Estoque atualizado com sucesso:', estoqueAtualizado);
-                if (estoqueAtualizado && estoqueAtualizado.id) {
-                    setEstoques(estoques
-                        .filter(estoque => estoque != null && estoque.id != null)
-                        .map(estoque => 
-                            estoque.id === estoqueEditando.id ? estoqueAtualizado : estoque
-                        ));
-                }
+                console.log('🔄 Recarregando lista de estoques do backend...');
+                await recarregarEstoques();
                 setItemEditando(null);
             } else {
                 console.log('➕ Criando novo estoque...');
@@ -173,9 +168,8 @@ function Estoques(): React.ReactElement {
                     ativo: data.ativo
                 });
                 console.log('✅ Estoque criado com sucesso:', novoEstoque);
-                if (novoEstoque && novoEstoque.id) {
-                    setEstoques([...estoques.filter(e => e != null && e.id != null), novoEstoque]);
-                }
+                console.log('🔄 Recarregando lista de estoques do backend...');
+                await recarregarEstoques();
             }
         } catch (err) {
             console.error('❌ Erro ao salvar estoque:', err);

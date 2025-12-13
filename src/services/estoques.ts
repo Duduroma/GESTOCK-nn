@@ -35,7 +35,36 @@ interface PaginatedResponse<T> {
 
 export const estoquesService = {
     listar: async (params?: ListEstoquesParams): Promise<PaginatedResponse<Estoque>> => {
-        return api.get('/estoques', params);
+        console.log('📋 [EstoquesService] Listando estoques com params:', params);
+        try {
+            const response = await api.get('/estoques', params);
+            console.log('✅ [EstoquesService] Resposta recebida:', response);
+            console.log('📦 [EstoquesService] Tipo da resposta:', typeof response);
+            console.log('📦 [EstoquesService] É array?', Array.isArray(response));
+            if (response && typeof response === 'object') {
+                console.log('📦 [EstoquesService] Keys da resposta:', Object.keys(response));
+                if (Array.isArray(response)) {
+                    console.log('📦 [EstoquesService] Tamanho do array:', response.length);
+                    if (response.length > 0) {
+                        console.log('📦 [EstoquesService] Primeiro estoque:', response[0]);
+                    }
+                } else if ('content' in response) {
+                    console.log('📦 [EstoquesService] Content (array):', response.content);
+                    console.log('📦 [EstoquesService] Total de elementos:', response.totalElements);
+                    console.log('📦 [EstoquesService] Tamanho do content:', Array.isArray(response.content) ? response.content.length : 'não é array');
+                }
+            }
+            return response;
+        } catch (error: any) {
+            console.error('❌ [EstoquesService] Erro ao listar estoques:', error);
+            console.error('❌ [EstoquesService] Detalhes do erro:', {
+                message: error?.message,
+                status: error?.response?.status,
+                data: error?.response?.data,
+                stack: error?.stack
+            });
+            throw error;
+        }
     },
 
     buscarPorId: async (id: EstoqueId): Promise<Estoque> => {
